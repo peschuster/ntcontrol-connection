@@ -1,5 +1,5 @@
-import { PowerCommand, InputSelectCommand, FreezeCommand, ShutterCommand, LensShiftHorizontalCommand, LensShiftVerticalCommand, LensFocusCommand, LensZoomCommand, LensPositionHorizontalCommand, LensPositionVerticalCommand, LensPositionFocusCommand, PictureModeCommand, ContrastCommand, BrightnessCommand, ColorCommand, TintCommand, SharpnessCommand, ColorTemperatureCommand, WhiteBalanceLowRedCommand, WhiteBalanceLowGreenCommand, WhiteBalanceLowBlueCommand, WhiteBalanceHighRedCommand, WhiteBalanceHighGreenCommand, WhiteBalanceHighBlueCommand } from '../Commands'
-import { ProjectorInput, ActionSpeed, PictureMode, ColorTemperature, GenericCommandInterface } from '../Types'
+import { PowerCommand, InputSelectCommand, FreezeCommand, ShutterCommand, LensShiftHorizontalCommand, LensShiftVerticalCommand, LensFocusCommand, LensZoomCommand, LensPositionHorizontalCommand, LensPositionVerticalCommand, LensPositionFocusCommand, PictureModeCommand, ContrastCommand, BrightnessCommand, ColorCommand, TintCommand, SharpnessCommand, ColorTemperatureCommand, WhiteBalanceLowRedCommand, WhiteBalanceLowGreenCommand, WhiteBalanceLowBlueCommand, WhiteBalanceHighRedCommand, WhiteBalanceHighGreenCommand, WhiteBalanceHighBlueCommand, GeometryCommand, AspectCommand, ZoomHorizontalCommand, ZoomBothCommand, ZoomVerticalCommand, ShiftHorizontalCommand, ShiftVerticalCommand, ClockPhaseCommand } from '../Commands'
+import { ProjectorInput, ActionSpeed, PictureMode, ColorTemperature, GenericCommandInterface, Geometry, Aspect } from '../Types'
 
 test('POWER specification', () => {
     // Query
@@ -333,7 +333,7 @@ test('WHITE BALANCE HIGH RED specification', () => {
 
     // Parse
     expect(cmd.parseResponse('000')).toBe(0)
-    expect(cmd.parseResponse('0001')).toBe(1)
+    expect(cmd.parseResponse('001')).toBe(1)
     expect(cmd.parseResponse('255')).toBe(255)
 })
 
@@ -350,7 +350,7 @@ test('WHITE BALANCE HIGH GREEN specification', () => {
 
     // Parse
     expect(cmd.parseResponse('000')).toBe(0)
-    expect(cmd.parseResponse('0001')).toBe(1)
+    expect(cmd.parseResponse('001')).toBe(1)
     expect(cmd.parseResponse('255')).toBe(255)
 })
 
@@ -367,6 +367,134 @@ test('WHITE BALANCE HIGH BLUE specification', () => {
 
     // Parse
     expect(cmd.parseResponse('000')).toBe(0)
-    expect(cmd.parseResponse('0001')).toBe(1)
+    expect(cmd.parseResponse('001')).toBe(1)
     expect(cmd.parseResponse('255')).toBe(255)
+})
+
+test('GEOMETRY specification', () => {
+    const cmd = GeometryCommand
+
+    // Query
+    expect(cmd.getQueryCommand()).toBe('QVX:GMMI0')
+
+    // Set
+    expect(cmd.getSetCommand(Geometry.OFF)).toBe('VXX:GMMI0=+00000')
+    expect(cmd.getSetCommand(Geometry.KEYSTONE)).toBe('VXX:GMMI0=+00001')
+    expect(cmd.getSetCommand(Geometry.CURVED)).toBe('VXX:GMMI0=+00002')
+    expect(cmd.getSetCommand(Geometry['PC-1'])).toBe('VXX:GMMI0=+00003')
+    expect(cmd.getSetCommand(Geometry['PC-2'])).toBe('VXX:GMMI0=+00004')
+    expect(cmd.getSetCommand(Geometry['PC-3'])).toBe('VXX:GMMI0=+00005')
+    expect(cmd.getSetCommand(Geometry['CORNER-CORRECTION'])).toBe('VXX:GMMI0=+00010')
+
+    // Parse
+    expect(cmd.parseResponse('GMMI0=+00000')).toBe(Geometry.OFF)
+    expect(cmd.parseResponse('GMMI0=+00001')).toBe(Geometry.KEYSTONE)
+    expect(cmd.parseResponse('GMMI0=+00002')).toBe(Geometry.CURVED)
+    expect(cmd.parseResponse('GMMI0=+00003')).toBe(Geometry['PC-1'])
+    expect(cmd.parseResponse('GMMI0=+00004')).toBe(Geometry['PC-2'])
+    expect(cmd.parseResponse('GMMI0=+00005')).toBe(Geometry['PC-3'])
+    expect(cmd.parseResponse('GMMI0=+00010')).toBe(Geometry['CORNER-CORRECTION'])
+})
+
+test('SHIFT-HORIZONATL specification', () => {
+    const cmd = ShiftHorizontalCommand
+
+    // Query
+    expect(cmd.getQueryCommand()).toBe('QTH')
+
+    // Set
+    expect(cmd.getSetCommand(0)).toBe('VTH:0000')
+    expect(cmd.getSetCommand(100)).toBe('VTH:0100')
+    expect(cmd.getSetCommand(4095)).toBe('VTH:4095')
+
+    // Parse
+    expect(cmd.parseResponse('0000')).toBe(0)
+    expect(cmd.parseResponse('0100')).toBe(100)
+    expect(cmd.parseResponse('4095')).toBe(4095)
+})
+
+test('SHIFT-VERTICAL specification', () => {
+    const cmd = ShiftVerticalCommand
+
+    // Query
+    expect(cmd.getQueryCommand()).toBe('QTV')
+
+    // Set
+    expect(cmd.getSetCommand(0)).toBe('VTV:0000')
+    expect(cmd.getSetCommand(100)).toBe('VTV:0100')
+    expect(cmd.getSetCommand(4094)).toBe('VTV:4094')
+
+    // Parse
+    expect(cmd.parseResponse('0000')).toBe(0)
+    expect(cmd.parseResponse('0100')).toBe(100)
+    expect(cmd.parseResponse('4094')).toBe(4094)
+})
+
+test('CLOCK PHASE specification', () => {
+    const cmd = ClockPhaseCommand
+
+    // Query
+    expect(cmd.getQueryCommand()).toBe('QCP')
+
+    // Set
+    expect(cmd.getSetCommand(0)).toBe('VCP:000')
+    expect(cmd.getSetCommand(10)).toBe('VCP:010')
+    expect(cmd.getSetCommand(31)).toBe('VCP:031')
+
+    // Parse
+    expect(cmd.parseResponse('000')).toBe(0)
+    expect(cmd.parseResponse('010')).toBe(10)
+    expect(cmd.parseResponse('031')).toBe(31)
+})
+
+test('ASPECT specification', () => {
+    const cmd = AspectCommand
+
+    // Query
+    expect(cmd.getQueryCommand()).toBe('QSE')
+
+    // Set
+    expect(cmd.getSetCommand(Aspect['AUTO/VID AUTO/DEFAULT'])).toBe('VSE:0')
+    expect(cmd.getSetCommand(Aspect['NORMAL(4:3)'])).toBe('VSE:1')
+    expect(cmd.getSetCommand(Aspect['WIDE(16:9)'])).toBe('VSE:2')
+    expect(cmd.getSetCommand(Aspect['NATIVE(through)'])).toBe('VSE:5')
+    expect(cmd.getSetCommand(Aspect['FULL(HV FIT)'])).toBe('VSE:6')
+    expect(cmd.getSetCommand(Aspect['H-FIT'])).toBe('VSE:9')
+    expect(cmd.getSetCommand(Aspect['V-FIT'])).toBe('VSE:10')
+
+    // Parse
+    expect(cmd.parseResponse('0')).toBe(Aspect['AUTO/VID AUTO/DEFAULT'])
+    expect(cmd.parseResponse('1')).toBe(Aspect['NORMAL(4:3)'])
+    expect(cmd.parseResponse('2')).toBe(Aspect['WIDE(16:9)'])
+    expect(cmd.parseResponse('5')).toBe(Aspect['NATIVE(through)'])
+    expect(cmd.parseResponse('6')).toBe(Aspect['FULL(HV FIT)'])
+    expect(cmd.parseResponse('9')).toBe(Aspect['H-FIT'])
+    expect(cmd.parseResponse('10')).toBe(Aspect['V-FIT'])
+})
+
+function testZoomCommand (cmd: GenericCommandInterface<number>, name: string) {
+    // Query
+    expect(cmd.getQueryCommand()).toBe('Q' + name)
+
+    // Set
+    expect(cmd.getSetCommand(50)).toBe('O' + name + ':050')
+    expect(cmd.getSetCommand(100)).toBe('O' + name + ':100')
+    expect(cmd.getSetCommand(999)).toBe('O' + name + ':999')
+
+    // Parse
+    expect(cmd.parseResponse('050')).toBe(50)
+    expect(cmd.parseResponse('100')).toBe(100)
+    expect(cmd.parseResponse('999')).toBe(999)
+}
+
+test('ZOOM-HORIZONTAL specification', () => {
+    testZoomCommand(ZoomHorizontalCommand, 'ZH')
+})
+
+test('ZOOM-VERTICAL specification', () => {
+    testZoomCommand(ZoomVerticalCommand, 'ZV')
+})
+
+test('ZOOM-BOTH specification', () => {
+    testZoomCommand(ZoomBothCommand, 'ZO')
 })

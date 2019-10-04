@@ -53,12 +53,12 @@ export enum Geometry {
 
 export enum Aspect {
     UNKOWN = '',
-    'AUTO/VID AUTO/DEFAULT' = '00',
-    'NORMAL(4:3)' = '01',
-    'WIDE(16:9)' = '02',
-    'NATIVE(through)' = '05',
-    'FULL(HV FIT)' = '06',
-    'H-FIT' = '09',
+    'AUTO/VID AUTO/DEFAULT' = '0',
+    'NORMAL(4:3)' = '1',
+    'WIDE(16:9)' = '2',
+    'NATIVE(through)' = '5',
+    'FULL(HV FIT)' = '6',
+    'H-FIT' = '9',
     'V-FIT' = '10'
 }
 

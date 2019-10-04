@@ -31,10 +31,13 @@ export const WhiteBalanceHighBlueCommand = new NumberRangeCommand('HB', 0, 255, 
 
 // POSITION
 export const GeometryCommand = new EnumCommand<Geometry>('XX', undefined, 'GMMI0')
+export const ShiftHorizontalCommand = new NumberRangeCommand('TH', 0, 4095, 0, 4)
+export const ShiftVerticalCommand = new NumberRangeCommand('TV', 0, 4094, 0, 4)
+export const ClockPhaseCommand = new NumberRangeCommand('CP', 0, 31, 0, 3)
 export const AspectCommand = new EnumCommand<Aspect>('SE')
-
-export const ZoomHorizontalCommand = new NumberRangeCommand('ZH', 50, 999, 1, 3, 'OZH')
-export const ZoomVerticalCommand = new NumberRangeCommand('ZV', 50, 999, 1, 3, 'OZV')
+export const ZoomHorizontalCommand = new NumberRangeCommand('ZH', 50, 999, 50, 3, undefined, 'O')
+export const ZoomVerticalCommand = new NumberRangeCommand('ZV', 50, 999, 50, 3, undefined, 'O')
+export const ZoomBothCommand = new NumberRangeCommand('ZO', 50, 999, 50, 3, undefined, 'O')
 export const ZoomModeFullCommand = new BooleanCommand('ZT')
 export const ZoomInterlockedCommand = new BooleanCommand('ZS')
 
