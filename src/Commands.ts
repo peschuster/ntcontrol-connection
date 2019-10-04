@@ -22,6 +22,12 @@ export const ColorCommand = new NumberRangeCommand('CO', -31, 31, 1, 3, undefine
 export const TintCommand = new NumberRangeCommand('TN', -31, 31, 1, 3, undefined, 'V', 'QVT')
 export const SharpnessCommand = new NumberRangeCommand('SR', 0, 15, 0, 3, undefined, 'V', 'QVS')
 export const ColorTemperatureCommand = new EnumCommand<ColorTemperature>('TE', undefined, undefined, 'O')
+export const WhiteBalanceLowRedCommand = new NumberRangeCommand('OR', -127, +127, 1, 3, undefined, 'V')
+export const WhiteBalanceLowGreenCommand = new NumberRangeCommand('OG', -127, +127, 1, 3, undefined, 'V')
+export const WhiteBalanceLowBlueCommand = new NumberRangeCommand('OB', -127, +127, 1, 3, undefined, 'V')
+export const WhiteBalanceHighRedCommand = new NumberRangeCommand('HR', 0, 255, 0, 3, undefined, 'V')
+export const WhiteBalanceHighGreenCommand = new NumberRangeCommand('HG', 0, 255, 0, 3, undefined, 'V')
+export const WhiteBalanceHighBlueCommand = new NumberRangeCommand('HB', 0, 255, 0, 3, undefined, 'V')
 
 // POSITION
 export const GeometryCommand = new EnumCommand<Geometry>('XX', undefined, 'GMMI0')

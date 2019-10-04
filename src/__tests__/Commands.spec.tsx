@@ -1,4 +1,4 @@
-import { PowerCommand, InputSelectCommand, FreezeCommand, ShutterCommand, LensShiftHorizontalCommand, LensShiftVerticalCommand, LensFocusCommand, LensZoomCommand, LensPositionHorizontalCommand, LensPositionVerticalCommand, LensPositionFocusCommand, PictureModeCommand, ContrastCommand, BrightnessCommand, ColorCommand, TintCommand, SharpnessCommand, ColorTemperatureCommand } from '../Commands'
+import { PowerCommand, InputSelectCommand, FreezeCommand, ShutterCommand, LensShiftHorizontalCommand, LensShiftVerticalCommand, LensFocusCommand, LensZoomCommand, LensPositionHorizontalCommand, LensPositionVerticalCommand, LensPositionFocusCommand, PictureModeCommand, ContrastCommand, BrightnessCommand, ColorCommand, TintCommand, SharpnessCommand, ColorTemperatureCommand, WhiteBalanceLowRedCommand, WhiteBalanceLowGreenCommand, WhiteBalanceLowBlueCommand, WhiteBalanceHighRedCommand, WhiteBalanceHighGreenCommand, WhiteBalanceHighBlueCommand } from '../Commands'
 import { ProjectorInput, ActionSpeed, PictureMode, ColorTemperature, GenericCommandInterface } from '../Types'
 
 test('POWER specification', () => {
@@ -260,11 +260,113 @@ test('COLOR TEMPERATURE specification', () => {
     expect(ColorTemperatureCommand.getSetCommand(ColorTemperature['9300K'])).toBe('OTE:9300')
 
     // Parse
-    expect(PictureModeCommand.parseResponse('1')).toBe(ColorTemperature.DEFAULT)
-    expect(PictureModeCommand.parseResponse('04')).toBe(ColorTemperature.USER1)
-    expect(PictureModeCommand.parseResponse('09')).toBe(ColorTemperature.USER2)
-    expect(PictureModeCommand.parseResponse('3200')).toBe(ColorTemperature['3200K'])
-    expect(PictureModeCommand.parseResponse('3300')).toBe(ColorTemperature['3300K'])
-    expect(PictureModeCommand.parseResponse('9200')).toBe(ColorTemperature['9200K'])
-    expect(PictureModeCommand.parseResponse('9300')).toBe(ColorTemperature['9300K'])
+    expect(ColorTemperatureCommand.parseResponse('1')).toBe(ColorTemperature.DEFAULT)
+    expect(ColorTemperatureCommand.parseResponse('04')).toBe(ColorTemperature.USER1)
+    expect(ColorTemperatureCommand.parseResponse('09')).toBe(ColorTemperature.USER2)
+    expect(ColorTemperatureCommand.parseResponse('3200')).toBe(ColorTemperature['3200K'])
+    expect(ColorTemperatureCommand.parseResponse('3300')).toBe(ColorTemperature['3300K'])
+    expect(ColorTemperatureCommand.parseResponse('9200')).toBe(ColorTemperature['9200K'])
+    expect(ColorTemperatureCommand.parseResponse('9300')).toBe(ColorTemperature['9300K'])
+})
+
+test('WHITE BALANCE LOW RED specification', () => {
+    const cmd = WhiteBalanceLowRedCommand
+
+    // Query
+    expect(cmd.getQueryCommand()).toBe('QOR')
+
+    // Set
+    expect(cmd.getSetCommand(-127)).toBe('VOR:001')
+    expect(cmd.getSetCommand(0)).toBe('VOR:128')
+    expect(cmd.getSetCommand(+127)).toBe('VOR:255')
+
+    // Parse
+    expect(cmd.parseResponse('001')).toBe(-127)
+    expect(cmd.parseResponse('128')).toBe(0)
+    expect(cmd.parseResponse('255')).toBe(127)
+})
+
+test('WHITE BALANCE LOW Greem specification', () => {
+    const cmd = WhiteBalanceLowGreenCommand
+
+    // Query
+    expect(cmd.getQueryCommand()).toBe('QOG')
+
+    // Set
+    expect(cmd.getSetCommand(-127)).toBe('VOG:001')
+    expect(cmd.getSetCommand(0)).toBe('VOG:128')
+    expect(cmd.getSetCommand(+127)).toBe('VOG:255')
+
+    // Parse
+    expect(cmd.parseResponse('001')).toBe(-127)
+    expect(cmd.parseResponse('128')).toBe(0)
+    expect(cmd.parseResponse('255')).toBe(127)
+})
+
+test('WHITE BALANCE LOW BLUE specification', () => {
+    const cmd = WhiteBalanceLowBlueCommand
+
+    // Query
+    expect(cmd.getQueryCommand()).toBe('QOB')
+
+    // Set
+    expect(cmd.getSetCommand(-127)).toBe('VOB:001')
+    expect(cmd.getSetCommand(0)).toBe('VOB:128')
+    expect(cmd.getSetCommand(+127)).toBe('VOB:255')
+
+    // Parse
+    expect(cmd.parseResponse('001')).toBe(-127)
+    expect(cmd.parseResponse('128')).toBe(0)
+    expect(cmd.parseResponse('255')).toBe(127)
+})
+
+test('WHITE BALANCE HIGH RED specification', () => {
+    const cmd = WhiteBalanceHighRedCommand
+
+    // Query
+    expect(cmd.getQueryCommand()).toBe('QHR')
+
+    // Set
+    expect(cmd.getSetCommand(0)).toBe('VHR:000')
+    expect(cmd.getSetCommand(100)).toBe('VHR:100')
+    expect(cmd.getSetCommand(255)).toBe('VHR:255')
+
+    // Parse
+    expect(cmd.parseResponse('000')).toBe(0)
+    expect(cmd.parseResponse('0001')).toBe(1)
+    expect(cmd.parseResponse('255')).toBe(255)
+})
+
+test('WHITE BALANCE HIGH GREEN specification', () => {
+    const cmd = WhiteBalanceHighGreenCommand
+
+    // Query
+    expect(cmd.getQueryCommand()).toBe('QHG')
+
+    // Set
+    expect(cmd.getSetCommand(0)).toBe('VHG:000')
+    expect(cmd.getSetCommand(100)).toBe('VHG:100')
+    expect(cmd.getSetCommand(255)).toBe('VHG:255')
+
+    // Parse
+    expect(cmd.parseResponse('000')).toBe(0)
+    expect(cmd.parseResponse('0001')).toBe(1)
+    expect(cmd.parseResponse('255')).toBe(255)
+})
+
+test('WHITE BALANCE HIGH BLUE specification', () => {
+    const cmd = WhiteBalanceHighBlueCommand
+
+    // Query
+    expect(cmd.getQueryCommand()).toBe('QHB')
+
+    // Set
+    expect(cmd.getSetCommand(0)).toBe('VHB:000')
+    expect(cmd.getSetCommand(100)).toBe('VHB:100')
+    expect(cmd.getSetCommand(255)).toBe('VHB:255')
+
+    // Parse
+    expect(cmd.parseResponse('000')).toBe(0)
+    expect(cmd.parseResponse('0001')).toBe(1)
+    expect(cmd.parseResponse('255')).toBe(255)
 })

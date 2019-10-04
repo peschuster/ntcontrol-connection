@@ -1,5 +1,6 @@
 export enum ProtocolPrefix {
     SINGLE_COMMAND_ASCII = '00',
+    SINGLE_COMMAND_BINARY = '01',
     PERSISTENT_ASCII = '20',
     PERSISTENT_BIN = '21'
 }
