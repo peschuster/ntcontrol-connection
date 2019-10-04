@@ -47,7 +47,7 @@ export class Projector extends EventEmitter {
             freeze: false,
             shutter: false,
             lamps: 0,
-            input: ProjectorInput.UNKOWN
+            input: ProjectorInput.COMPUTER1
         }
 
         if (connection.connected === true) {
@@ -128,7 +128,7 @@ export class Projector extends EventEmitter {
         switch (this.nextQueryOperation) {
             case ProjectorQueryOperation.Input:
                 this.sendQuery(Commands.InputSelectCommand).then(response => {
-                    if (response !== undefined) this.setState(() => this.state.input, v => this.state.input = v, 'INPUT', Commands.InputSelectCommand.parseResponse(response))
+                    if (response !== undefined) this.setState(() => this.state.input, v => this.state.input = v || '', 'INPUT', Commands.InputSelectCommand.parseResponse(response))
                 }, this.onError)
                 this.nextQueryOperation = ProjectorQueryOperation.Power
                 break
@@ -142,20 +142,20 @@ export class Projector extends EventEmitter {
                 break
             case ProjectorQueryOperation.Shutter:
                 this.sendQuery(Commands.ShutterCommand).then(response => {
-                    if (response !== undefined) this.setState(() => this.state.shutter, v => this.state.shutter = v, 'SHUTTER', Commands.ShutterCommand.parseResponse(response))
+                    if (response !== undefined) this.setState(() => this.state.shutter, v => this.state.shutter = v || false, 'SHUTTER', Commands.ShutterCommand.parseResponse(response))
                 }, this.onError)
                 this.nextQueryOperation = ProjectorQueryOperation.Lamps
                 break
             case ProjectorQueryOperation.Freeze:
                 this.sendQuery(Commands.FreezeCommand).then(response => {
-                    if (response !== undefined) this.setState(() => this.state.freeze, v => this.state.freeze = v, 'FREEZE', Commands.FreezeCommand.parseResponse(response))
+                    if (response !== undefined) this.setState(() => this.state.freeze, v => this.state.freeze = v || false, 'FREEZE', Commands.FreezeCommand.parseResponse(response))
                 }, this.onError)
                 this.nextQueryOperation = ProjectorQueryOperation.Shutter
                 break
             case ProjectorQueryOperation.Power:
             default:
                 this.sendQuery(Commands.PowerCommand).then(response => {
-                    if (response !== undefined) this.setState(() => this.state.power, v => this.state.power = v, 'POWER', Commands.PowerCommand.parseResponse(response))
+                    if (response !== undefined) this.setState(() => this.state.power, v => this.state.power = v || false, 'POWER', Commands.PowerCommand.parseResponse(response))
                 }, this.onError)
                 this.nextQueryOperation = ProjectorQueryOperation.Freeze
                 break

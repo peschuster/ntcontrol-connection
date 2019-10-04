@@ -1,5 +1,5 @@
 import * as Command from '../Commands'
-import { ProjectorInput, ActionSpeed, PictureMode, ColorTemperature, GenericCommandInterface, Geometry, Aspect, CustomMasking, EdgeBlending, ColorMatching, RgbTupple } from '../Types'
+import { ProjectorInput, ActionSpeed, PictureMode, ColorTemperature, GenericCommandInterface, Geometry, Aspect, CustomMasking, EdgeBlending, ColorMatching, RgbValue } from '../Types'
 
 test('POWER specification', () => {
     const cmd = Command.PowerCommand
@@ -675,7 +675,7 @@ test('COLOR MATCHING specification', () => {
     expect(cmd.parseResponse('CMAI0=+00004')).toBe(ColorMatching.MEASURED)
 })
 
-function testRgbCommand (cmd: GenericCommandInterface<RgbTupple>, setPrefix: string, valuePrefix: string) {
+function testRgbCommand (cmd: GenericCommandInterface<RgbValue>, setPrefix: string, valuePrefix: string) {
 
     // Set
     expect(cmd.getSetCommand({ R:    0, G:    0, B:    0 })).toBe(setPrefix + '0000,0000,0000')

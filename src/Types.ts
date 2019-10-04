@@ -1,3 +1,4 @@
+
 export enum ProtocolPrefix {
     SINGLE_COMMAND_ASCII = '00',
     SINGLE_COMMAND_BINARY = '01',
@@ -6,7 +7,6 @@ export enum ProtocolPrefix {
 }
 
 export enum ProjectorInput {
-    UNKOWN = '',
     COMPUTER1 = 'RG1',
     COMPUTER2 = 'RG2',
     VIDEO = 'VID',
@@ -19,7 +19,6 @@ export enum ProjectorInput {
 }
 
 export enum PictureMode {
-    UNKOWN = '',
     DYNAMIC = 'DYN',
     NATURAL = 'NAT',
     STANDARD = 'STD',
@@ -30,7 +29,6 @@ export enum PictureMode {
 }
 
 export enum ColorTemperature {
-    UNKOWN = '',
     DEFAULT = '1',
     USER1 = '04',
     USER2 = '09',
@@ -41,7 +39,6 @@ export enum ColorTemperature {
 }
 
 export enum Geometry {
-    UNKOWN = '',
     OFF = '+00000',
     KEYSTONE = '+00001',
     CURVED = '+00002',
@@ -52,7 +49,6 @@ export enum Geometry {
 }
 
 export enum Aspect {
-    UNKOWN = '',
     'AUTO/VID AUTO/DEFAULT' = '0',
     'NORMAL(4:3)' = '1',
     'WIDE(16:9)' = '2',
@@ -63,7 +59,6 @@ export enum Aspect {
 }
 
 export enum ColorMatching {
-    UNKOWN = '',
     OFF = '+00000',
     '3COLORS' = '+00001',
     '7COLORS' = '+00002',
@@ -71,14 +66,12 @@ export enum ColorMatching {
 }
 
 export enum ScreenSetting {
-    UNKOWN = '',
     '16:10' = '0',
     '16:9' = '1',
     '4:3' = '2'
 }
 
 export enum ShutterFade {
-    UNKOWN = '',
     '0.0s(OFF)' = '0.0',
     '0.5s' = '0.5',
     '3.5s' = '3.5',
@@ -89,7 +82,6 @@ export enum ShutterFade {
 }
 
 export enum NoSignalShutOff {
-    UNKOWN = '',
     DISABLE = '00',
     '10min' = '10',
     '20min' = '20',
@@ -103,7 +95,6 @@ export enum NoSignalShutOff {
 }
 
 export enum LensMemory {
-    UNKOWN = '',
     'LENS MEMORY1' = '+00000',
     'LENS MEMORY2' = '+00001',
     'LENS MEMORY3' = '+00002',
@@ -117,7 +108,6 @@ export enum LensMemory {
 }
 
 export enum LampControlStatus {
-    UNKOWN = '',
     'LAMP OFF' = '0',
     'In turning ON' = '1',
     'LAMP ON' = '2',
@@ -125,7 +115,6 @@ export enum LampControlStatus {
 }
 
 export enum LampStatus {
-    UNKOWN = '',
     'ALL OFF' = '0',
     'ALL ON' = '1',
     '1:ON, 4:ON' = '2',
@@ -141,7 +130,6 @@ export enum LampStatus {
 }
 
 export enum TestPattern {
-    UNKOWN = '',
     Off = '00',
     White = '01',
     Black = '02',
@@ -165,7 +153,6 @@ export enum TestPattern {
 }
 
 export enum ActionSpeed {
-    UNKOWN = '',
     'SLOW+' = '+00000',
     'SLOW-' = '+00001',
     'NORMAL+' = '+00100',
@@ -175,7 +162,6 @@ export enum ActionSpeed {
 }
 
 export enum CustomMasking {
-    UNKOWN = '',
     OFF = '+00000',
     'PC-1' = '+00001',
     'PC-2' = '+00002',
@@ -183,13 +169,12 @@ export enum CustomMasking {
 }
 
 export enum EdgeBlending {
-    UNKOWN = '',
     OFF = '+00000',
     ON = '+00001',
     USER = '+00002'
 }
 
-export interface RgbTupple {
+export interface RgbValue {
     R: number
     G: number
     B: number
@@ -207,187 +192,161 @@ export interface GenericCommandInterface<T> extends CommandInterface {
     getSetCommand (value?: T | undefined): string | undefined
 }
 
-export class BaseCommand {
-    public name: string
-
-    protected queryCommandBuilder: () => string
-
-    constructor (name: string, queryCommandBuilder: () => string) {
-        this.name = name
-        this.queryCommandBuilder = queryCommandBuilder
-    }
-
-    public getQueryCommand (): string {
-        return this.queryCommandBuilder()
-    }
+export interface CommandOptionInterface {
+    subname?: string,
+    queryCommand?: string,
+    setPrefix?: string,
+    setCommand?: string
 }
 
-export class BooleanCommand extends BaseCommand implements GenericCommandInterface<Boolean> {
-    public name: string
-    public valueOn: string
-    public valueOff: string
-    public supportsToggle: boolean
-
-    protected setCommandBuilder: (v: boolean | undefined) => string
-    protected resultParser: (v: string) => boolean
-
-    constructor (
-        name: string,
-        valueOn: string = '1',
-        valueOff: string = '0',
-        setCommandBuilder?: (v: boolean | undefined) => string,
-        queryCommandBuilder?: () => string,
-        resultParser?: (v: string) => boolean) {
-
-        super(name, (queryCommandBuilder !== undefined) ? queryCommandBuilder : () => 'Q' + this.name)
-
-        this.name = name
-        this.valueOn = valueOn
-        this.valueOff = valueOff
-
-        if (setCommandBuilder !== undefined) this.setCommandBuilder = setCommandBuilder
-        else this.setCommandBuilder = (value) => 'O' + this.name + (value === undefined ? '' : (':' + (value ? this.valueOn : this.valueOff)))
-
-        if (resultParser !== undefined) this.resultParser = resultParser
-        else this.resultParser = (response: string) => response === this.valueOn
-    }
-
-    public parseResponse (response: string): boolean {
-        return this.resultParser(response)
-    }
-
-    public getSetCommand (value?: boolean | undefined): string {
-        return this.setCommandBuilder(value)
-    }
+export interface ConverterInterface<T> {
+    parse (value: string): T | undefined
+    format (value: T | undefined): string
 }
 
-export class EnumCommand<T extends string> extends BaseCommand implements GenericCommandInterface<T> {
-    private setPrefix: string
-    private subname: string | undefined
-    constructor (
-        name: string,
-        queryCommand?: string | undefined,
-        subname?: string | undefined,
-        setPrefix: string = 'V') {
+export class NumberConverter implements ConverterInterface<number> {
 
-        if (queryCommand === undefined) queryCommand = 'Q' + (name === 'XX' ? 'VX' : name)
-        super(name, () => queryCommand + (subname === undefined ? '' : (':' + subname)))
-
-        this.subname = subname
-        this.setPrefix = setPrefix
-    }
-
-    public parseResponse (response: string): T {
-        let value = response
-
-        if (this.subname !== undefined) {
-            const parts = response.split('=')
-            if (parts.length === 2) {
-                value = parts[1]
-            }
-        }
-
-        return value as T
-    }
-
-    public getSetCommand (value?: T | undefined): string | undefined {
-        if (value !== undefined) {
-            if (this.subname !== undefined) {
-                return this.setPrefix + this.name + ':' + this.subname + '=' + value
-            } else {
-                return this.setPrefix + this.name + ':' + value
-            }
-        }
-        return undefined
-    }
-}
-
-export class NumberRangeCommand extends BaseCommand implements GenericCommandInterface<Number> {
-    public min: number
-    public max: number
-    public paddingCount: number
+    private min: number
     private offset: number
-    private setPrefix: string
-    private subname: string | undefined
+    private paddingCount: number
     private includeSign: boolean
 
-    constructor (
-        name: string,
-        min: number,
-        max: number,
-        minFormated: number = 0,
-        paddingCount: number = 3,
-        subname?: string | undefined,
-        setPrefix: string = 'V',
-        queryCommand?: string | undefined,
-        forceSign?: boolean) {
-
-        if (queryCommand === undefined) queryCommand = 'Q' + (name === 'XX' ? 'VX' : name)
-        super(name, () => queryCommand + (subname === undefined ? '' : (':' + subname)))
-
+    constructor (min: number, paddingCount: number, minFormatted?: number, includeSign?: boolean) {
         this.min = min
-        this.max = max
         this.paddingCount = paddingCount
-        this.subname = subname
-        this.setPrefix = setPrefix
+        minFormatted = minFormatted === undefined ? min : minFormatted
+        this.offset = minFormatted - min
 
-        this.offset = minFormated - min
-
-        if (forceSign !== undefined) {
-            this.includeSign = forceSign
+        if (includeSign !== undefined) {
+            this.includeSign = includeSign
         } else {
             this.includeSign = (this.min + this.offset) < 0
         }
     }
 
-    public parseResponse (response: string): number {
-        let value = response
-
-        if (this.subname !== undefined) {
-            const parts = response.split('=')
-            if (parts.length === 2) {
-                value = parts[1]
-            }
-        }
-
+    public parse (value: string): number | undefined {
         return parseInt(value, 10) - this.offset
     }
 
-    public getSetCommand (value: number): string | undefined {
-        if (value !== undefined) {
+    public format (value: number | undefined): string {
+        if (value === undefined) return ''
 
-            const offsettedValue = value + this.offset
-            const signLessValue = (offsettedValue < 0) ? (-1 * offsettedValue) : offsettedValue
-            let formattedValue = ('' + signLessValue).padStart(this.paddingCount, '0')
-            if (this.includeSign) {
-                formattedValue = (offsettedValue < 0 ? '-' : '+') + formattedValue
-            }
-
-            if (this.subname !== undefined) {
-                return this.setPrefix + this.name + ':' + this.subname + '=' + formattedValue
-            } else {
-                return this.setPrefix + this.name + ':' + formattedValue
-            }
+        const offsettedValue = value + this.offset
+        const signLessValue = (offsettedValue < 0) ? (-1 * offsettedValue) : offsettedValue
+        let formattedValue = ('' + signLessValue).padStart(this.paddingCount, '0')
+        if (this.includeSign) {
+            formattedValue = (offsettedValue < 0 ? '-' : '+') + formattedValue
         }
-        return undefined
+
+        return formattedValue
     }
 }
 
-export class RgbCommand extends BaseCommand implements GenericCommandInterface<RgbTupple> {
-    private subname: string | undefined
+export class BooleanConverter implements ConverterInterface<boolean> {
 
-    constructor (
-        name: string,
-        subname?: string | undefined,
-        queryCommand?: string | undefined) {
+    private queryOnValue: string
+    private queryOffValue: string
+    private setOnValue: string
+    private setOffValue: string
 
-        if (queryCommand === undefined) queryCommand = 'Q' + (name === 'XX' ? 'VX' : name)
-        super(name, () => queryCommand + (subname === undefined ? '' : (':' + subname)))
-
-        this.subname = subname
+    constructor (queryOnValue: string = '1', queryOffValue: string = '0', setOnValue?: string, setOffValue?: string) {
+        this.queryOnValue = queryOnValue
+        this.queryOffValue = queryOffValue
+        this.setOnValue = setOnValue === undefined ? queryOnValue : setOnValue
+        this.setOffValue = setOffValue === undefined ? queryOffValue : setOffValue
     }
 
-    public parseResponse (response: string): RgbTupple | undefined {
+    public parse (response: string): boolean | undefined {
+        if (response === this.queryOnValue) return true
+        if (response === this.queryOffValue) return false
+        return undefined
+    }
+
+    public format (value: boolean | undefined): string {
+        if (value === undefined) return ''
+        return value ? this.setOnValue : this.setOffValue
+    }
+}
+
+export const DefaultBooleanConverter = new BooleanConverter()
+
+export class EnumConverter<T extends string> implements ConverterInterface<T> {
+
+    public parse (value: string): T | undefined {
+        return value as T
+    }
+
+    public format (value: T | undefined): string {
+        if (value === undefined) return ''
+        return '' + value
+    }
+}
+
+class RgbConverter implements ConverterInterface<RgbValue> {
+
+    private static baseConverter: NumberConverter = new NumberConverter(0, 4, 0)
+
+    public parse (value: string): RgbValue | undefined {
+        const parts = value.split(',')
+        if (parts.length !== 3) return undefined
+        return {
+            R: RgbConverter.baseConverter.parse(parts[0]) || 0,
+            G: RgbConverter.baseConverter.parse(parts[1]) || 0,
+            B: RgbConverter.baseConverter.parse(parts[2]) || 0
+        }
+    }
+
+    public format (value: RgbValue | undefined): string {
+        if (value === undefined) return ''
+        const parts = [
+            RgbConverter.baseConverter.format(value.R),
+            RgbConverter.baseConverter.format(value.G),
+            RgbConverter.baseConverter.format(value.B) ]
+        return parts.join(',')
+    }
+}
+
+export const DefaultRgbConverter = new RgbConverter()
+
+export class GenericCommand<T> implements GenericCommandInterface<T> {
+    public name: string
+    public subname: string | undefined
+
+    private queryCommand: string
+    private setCommand: string
+
+    private converter: ConverterInterface<T>
+
+    constructor (name: string, converter: ConverterInterface<T>, options?: CommandOptionInterface) {
+        this.name = name
+        this.converter = converter
+
+        if (options === undefined) {
+            options = {}
+        }
+
+        this.subname = options.subname
+
+        this.queryCommand = options.queryCommand === undefined ? ('Q' + this.buildName(true)) : options.queryCommand
+
+        if (options.setCommand !== undefined) {
+            this.setCommand = options.setCommand
+        } else {
+            this.setCommand = (options.setPrefix === undefined ? 'V' : options.setPrefix)
+                + this.buildName()
+                + (this.subname === undefined ? ':' : '=')
+        }
+    }
+
+    private buildName (query: boolean = false) {
+        let name = this.name
+        if (name === 'XX' && query === true) {
+            name = 'VX'
+        }
+        return this.subname === undefined ? name : (name + ':' + this.subname)
+    }
+
+    parseResponse (response: string): T | undefined {
         let value = response
 
         if (this.subname !== undefined) {
@@ -397,38 +356,15 @@ export class RgbCommand extends BaseCommand implements GenericCommandInterface<R
             }
         }
 
-        const tuple = value.split(',')
-        if (tuple.length !== 3) {
-            return undefined
-        }
-
-        return {
-            R: parseInt(tuple[0], 10),
-            G: parseInt(tuple[1], 10),
-            B: parseInt(tuple[2], 10)
-        }
+        return this.converter.parse(value)
     }
 
-    private formatValue (value: number): string {
-        const signLessValue = (value < 0) ? (-1 * value) : value
-        let formattedValue = ('' + signLessValue).padStart(4, '0')
-        if (value < 0) {
-            formattedValue = '-' + formattedValue
-        }
-        return formattedValue
+    getSetCommand (value?: T | undefined): string | undefined {
+        return this.setCommand
+            + this.converter.format(value)
     }
 
-    public getSetCommand (value: RgbTupple): string | undefined {
-        if (value !== undefined) {
-            const parts = [ this.formatValue(value.R), this.formatValue(value.G), this.formatValue(value.B) ]
-            const formattedValue = parts.join(',')
-
-            if (this.subname !== undefined) {
-                return 'V' + this.name + ':' + this.subname + '=' + formattedValue
-            } else {
-                return 'V' + this.name + ':' + formattedValue
-            }
-        }
-        return undefined
+    getQueryCommand (): string {
+        return this.queryCommand
     }
 }
