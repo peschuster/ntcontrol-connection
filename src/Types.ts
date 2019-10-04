@@ -196,12 +196,13 @@ export interface CommandOptionInterface {
     subname?: string,
     queryCommand?: string,
     setPrefix?: string,
-    setCommand?: string
+    setCommand?: string,
+    setOperator?: string
 }
 
 export interface ConverterInterface<T> {
     parse (value: string): T | undefined
-    format (value: T | undefined): string
+    format (value: T | undefined): string | undefined
 }
 
 export class NumberConverter implements ConverterInterface<number> {
@@ -229,8 +230,8 @@ export class NumberConverter implements ConverterInterface<number> {
         return isNaN(result) ? undefined : result
     }
 
-    public format (value: number | undefined): string {
-        if (value === undefined) return ''
+    public format (value: number | undefined): string | undefined {
+        if (value === undefined) return undefined
 
         const offsettedValue = value + this.offset
         const signLessValue = (offsettedValue < 0) ? (-1 * offsettedValue) : offsettedValue
@@ -263,8 +264,8 @@ export class BooleanConverter implements ConverterInterface<boolean> {
         return undefined
     }
 
-    public format (value: boolean | undefined): string {
-        if (value === undefined) return ''
+    public format (value: boolean | undefined): string | undefined {
+        if (value === undefined) return undefined
         return value ? this.setOnValue : this.setOffValue
     }
 }
@@ -277,8 +278,8 @@ export class EnumConverter<T extends string> implements ConverterInterface<T> {
         return value as T
     }
 
-    public format (value: T | undefined): string {
-        if (value === undefined) return ''
+    public format (value: T | undefined): string | undefined {
+        if (value === undefined) return undefined
         return '' + value
     }
 }
@@ -297,8 +298,8 @@ class RgbConverter implements ConverterInterface<RgbValue> {
         }
     }
 
-    public format (value: RgbValue | undefined): string {
-        if (value === undefined) return ''
+    public format (value: RgbValue | undefined): string | undefined {
+        if (value === undefined) return undefined
         const parts = [
             RgbConverter.baseConverter.format(value.R),
             RgbConverter.baseConverter.format(value.G),
@@ -315,6 +316,7 @@ export class GenericCommand<T> implements GenericCommandInterface<T> {
 
     private queryCommand: string
     private setCommand: string
+    private setOperator: string
 
     private converter: ConverterInterface<T>
 
@@ -335,7 +337,12 @@ export class GenericCommand<T> implements GenericCommandInterface<T> {
         } else {
             this.setCommand = (options.setPrefix === undefined ? 'V' : options.setPrefix)
                 + this.buildName()
-                + (this.subname === undefined ? ':' : '=')
+        }
+
+        if (options.setOperator !== undefined) {
+            this.setOperator = options.setOperator
+        } else {
+            this.setOperator = this.subname === undefined ? ':' : '='
         }
     }
 
@@ -361,8 +368,10 @@ export class GenericCommand<T> implements GenericCommandInterface<T> {
     }
 
     getSetCommand (value?: T | undefined): string | undefined {
-        return this.setCommand
-            + this.converter.format(value)
+        const formatted = this.converter.format(value)
+        return formatted === undefined
+            ? this.setCommand
+            : (this.setCommand + this.setOperator + formatted)
     }
 
     getQueryCommand (): string {

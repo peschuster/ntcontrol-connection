@@ -11,8 +11,6 @@ test('POWER specification', () => {
     expect(cmd.getSetCommand(true)).toBe('PON')
     expect(cmd.getSetCommand(false)).toBe('POF')
 
-    expect(cmd.getSetCommand(undefined)).toBe('P')
-
     // Parse
     expect(cmd.parseResponse('000')).toBe(false)
     expect(cmd.parseResponse('001')).toBe(true)
@@ -72,6 +70,8 @@ test('SHUTTER specification', () => {
     expect(cmd.getSetCommand(true)).toBe('OSH:1')
     expect(cmd.getSetCommand(false)).toBe('OSH:0')
 
+    expect(cmd.getSetCommand(undefined)).toBe('OSH')
+
     // Parse
     expect(cmd.parseResponse('0')).toBe(false)
     expect(cmd.parseResponse('1')).toBe(true)
@@ -122,7 +122,7 @@ test('LENS POSITION HORIZONTAL specification', () => {
     expect(cmd.getSetCommand(2480)).toBe('VXX:LNSI7=+02480')
     expect(cmd.getSetCommand(-100)).toBe('VXX:LNSI7=-00100')
     expect(cmd.getSetCommand(0)).toBe('VXX:LNSI7=+00000')
-    expect(cmd.getSetCommand(undefined)).toBe('VXX:LNSI7=')
+    expect(cmd.getSetCommand(undefined)).toBe('VXX:LNSI7')
 
     // Parse
     expect(cmd.parseResponse('LNSI7=-02480')).toBe(-2480)
@@ -673,7 +673,7 @@ test('COLOR MATCHING specification', () => {
     expect(cmd.getSetCommand(ColorMatching['7COLORS'])).toBe('VXX:CMAI0=+00002')
     expect(cmd.getSetCommand(ColorMatching.MEASURED)).toBe('VXX:CMAI0=+00004')
 
-    expect(cmd.getSetCommand(undefined)).toBe('VXX:CMAI0=')
+    expect(cmd.getSetCommand(undefined)).toBe('VXX:CMAI0')
 
     // Parse
     expect(cmd.parseResponse('CMAI0=+00000')).toBe(ColorMatching.OFF)
@@ -691,7 +691,7 @@ function testRgbCommand (cmd: GenericCommandInterface<RgbValue>, setPrefix: stri
     expect(cmd.getSetCommand({ R:    0, G:  100, B:    0 })).toBe(setPrefix + '0000,0100,0000')
     expect(cmd.getSetCommand({ R:    0, G:    0, B:  100 })).toBe(setPrefix + '0000,0000,0100')
 
-    expect(cmd.getSetCommand(undefined)).toBe(setPrefix + '')
+    expect(cmd.getSetCommand(undefined)).toBe(setPrefix.substring(0, setPrefix.length - 1) + '')
 
     // Parse
     expect(cmd.parseResponse(valuePrefix + '0000,0000,0000')).toStrictEqual({ R:    0, G:    0, B:    0 })

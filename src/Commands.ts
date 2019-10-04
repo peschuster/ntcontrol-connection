@@ -1,7 +1,7 @@
 import { ProjectorInput, PictureMode, Geometry, Aspect, ColorMatching, ScreenSetting, ShutterFade, NoSignalShutOff, LensMemory, LampControlStatus, LampStatus, TestPattern, ActionSpeed, ColorTemperature, EdgeBlending, CustomMasking, GenericCommand, BooleanConverter, EnumConverter, DefaultBooleanConverter, DefaultRgbConverter, NumberConverter } from './Types'
 
 // BASIC OPERATION
-export const PowerCommand = new GenericCommand('PW', new BooleanConverter('001', '000', 'ON', 'OF'), { setCommand: 'P' })
+export const PowerCommand = new GenericCommand('PW', new BooleanConverter('001', '000', 'ON', 'OF'), { setOperator: '', setCommand: 'P' })
 export const InputSelectCommand = new GenericCommand('IS', new EnumConverter<ProjectorInput>(), { queryCommand: 'QIN', setPrefix: 'I' })
 export const FreezeCommand = new GenericCommand('FZ', DefaultBooleanConverter, { setPrefix: 'O' })
 export const ShutterCommand = new GenericCommand('SH', DefaultBooleanConverter, { setPrefix: 'O' })
@@ -75,7 +75,7 @@ export const ShutterFadeInCommand = new GenericCommand('XX', new EnumConverter<S
 export const ShutterFadeOutCommand = new GenericCommand('XX', new EnumConverter<ShutterFade>(), { subname: 'SEFS2' })
 
 // PROJECTOR SETUP
-export const IdAllCommand = new GenericCommand('VY', DefaultBooleanConverter, { setCommand: 'RVS:' })
+export const IdAllCommand = new GenericCommand('VY', DefaultBooleanConverter, { setCommand: 'RVS' })
 
 export const NoSignalShutOffCommand = new GenericCommand('AF', new EnumConverter<NoSignalShutOff>(), { setPrefix: 'O' })
 
