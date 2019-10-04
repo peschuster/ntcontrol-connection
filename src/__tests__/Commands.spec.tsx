@@ -1,5 +1,5 @@
-import { PowerCommand, InputSelectCommand, FreezeCommand, ShutterCommand, LensShiftHorizontalCommand, LensShiftVerticalCommand, LensFocusCommand, LensZoomCommand, LensPositionHorizontalCommand, LensPositionVerticalCommand, LensPositionFocusCommand, PictureModeCommand, ContrastCommand, BrightnessCommand, ColorCommand, TintCommand, SharpnessCommand, ColorTemperatureCommand, WhiteBalanceLowRedCommand, WhiteBalanceLowGreenCommand, WhiteBalanceLowBlueCommand, WhiteBalanceHighRedCommand, WhiteBalanceHighGreenCommand, WhiteBalanceHighBlueCommand, GeometryCommand, AspectCommand, ZoomHorizontalCommand, ZoomBothCommand, ZoomVerticalCommand, ShiftHorizontalCommand, ShiftVerticalCommand, ClockPhaseCommand } from '../Commands'
-import { ProjectorInput, ActionSpeed, PictureMode, ColorTemperature, GenericCommandInterface, Geometry, Aspect } from '../Types'
+import { PowerCommand, InputSelectCommand, FreezeCommand, ShutterCommand, LensShiftHorizontalCommand, LensShiftVerticalCommand, LensFocusCommand, LensZoomCommand, LensPositionHorizontalCommand, LensPositionVerticalCommand, LensPositionFocusCommand, PictureModeCommand, ContrastCommand, BrightnessCommand, ColorCommand, TintCommand, SharpnessCommand, ColorTemperatureCommand, WhiteBalanceLowRedCommand, WhiteBalanceLowGreenCommand, WhiteBalanceLowBlueCommand, WhiteBalanceHighRedCommand, WhiteBalanceHighGreenCommand, WhiteBalanceHighBlueCommand, GeometryCommand, AspectCommand, ZoomHorizontalCommand, ZoomBothCommand, ZoomVerticalCommand, ShiftHorizontalCommand, ShiftVerticalCommand, ClockPhaseCommand, ZoomModeFullCommand, ZoomInterlockedCommand, BlankingUpperCommand, BlankingLeftCommand, BlankingRightCommand, BlankingLowerCommand, CustomMaskingCommand, EdgeBlendingCommand, ColorMatchingCommand, ColorMatching3ColorsRedCommand, ColorMatching3ColorsGreenCommand, ColorMatching3ColorsBlueCommand, ColorMatching3ColorsAutoTestpatternCommand, ColorMatching3ColorsWhiteCommand, ColorMatching7ColorsRedCommand, ColorMatching7ColorsBlueCommand, ColorMatching7ColorsGreenCommand, ColorMatching7ColorsCyanCommand, ColorMatching7ColorsMagentaCommand, ColorMatching7ColorsYellowCommand, ColorMatching7ColorsWhiteCommand, ColorMatching7ColorsAutoTestpatternCommand } from '../Commands'
+import { ProjectorInput, ActionSpeed, PictureMode, ColorTemperature, GenericCommandInterface, Geometry, Aspect, CustomMasking, EdgeBlending, ColorMatching, RgbTupple } from '../Types'
 
 test('POWER specification', () => {
     // Query
@@ -497,4 +497,324 @@ test('ZOOM-VERTICAL specification', () => {
 
 test('ZOOM-BOTH specification', () => {
     testZoomCommand(ZoomBothCommand, 'ZO')
+})
+
+test('ZOOM-INTERLOCKED specification', () => {
+    // Query
+    expect(ZoomInterlockedCommand.getQueryCommand()).toBe('QZS')
+
+    // Set
+    expect(ZoomInterlockedCommand.getSetCommand(true)).toBe('OZS:1')
+    expect(ZoomInterlockedCommand.getSetCommand(false)).toBe('OZS:0')
+
+    // Parse
+    expect(ZoomInterlockedCommand.parseResponse('0')).toBe(false)
+    expect(ZoomInterlockedCommand.parseResponse('1')).toBe(true)
+})
+
+test('ZOOM-MODE specification', () => {
+    // Query
+    expect(ZoomModeFullCommand.getQueryCommand()).toBe('QZT')
+
+    // Set
+    expect(ZoomModeFullCommand.getSetCommand(true)).toBe('OZT:1')
+    expect(ZoomModeFullCommand.getSetCommand(false)).toBe('OZT:0')
+
+    // Parse
+    expect(ZoomModeFullCommand.parseResponse('0')).toBe(false)
+    expect(ZoomModeFullCommand.parseResponse('1')).toBe(true)
+})
+
+test('BLANKING-UPPER specification', () => {
+    const cmd = BlankingUpperCommand
+
+    // Query
+    expect(cmd.getQueryCommand()).toBe('QLU')
+
+    // Set
+    expect(cmd.getSetCommand(0)).toBe('DBU:000')
+    expect(cmd.getSetCommand(999)).toBe('DBU:999')
+    expect(cmd.getSetCommand(1234)).toBe('DBU:1234')
+
+    // Parse
+    expect(cmd.parseResponse('000')).toBe(0)
+    expect(cmd.parseResponse('999')).toBe(999)
+    expect(cmd.parseResponse('1234')).toBe(1234)
+})
+
+test('BLANKING-LOWER specification', () => {
+    const cmd = BlankingLowerCommand
+
+    // Query
+    expect(cmd.getQueryCommand()).toBe('QLB')
+
+    // Set
+    expect(cmd.getSetCommand(0)).toBe('DBB:000')
+    expect(cmd.getSetCommand(999)).toBe('DBB:999')
+    expect(cmd.getSetCommand(1234)).toBe('DBB:1234')
+
+    // Parse
+    expect(cmd.parseResponse('000')).toBe(0)
+    expect(cmd.parseResponse('999')).toBe(999)
+    expect(cmd.parseResponse('1234')).toBe(1234)
+})
+
+test('BLANKING-RIGHT specification', () => {
+    const cmd = BlankingRightCommand
+
+    // Query
+    expect(cmd.getQueryCommand()).toBe('QLR')
+
+    // Set
+    expect(cmd.getSetCommand(0)).toBe('DBR:000')
+    expect(cmd.getSetCommand(999)).toBe('DBR:999')
+    expect(cmd.getSetCommand(1234)).toBe('DBR:1234')
+
+    // Parse
+    expect(cmd.parseResponse('000')).toBe(0)
+    expect(cmd.parseResponse('999')).toBe(999)
+    expect(cmd.parseResponse('1234')).toBe(1234)
+})
+
+test('BLANKING-LEFT specification', () => {
+    const cmd = BlankingLeftCommand
+
+    // Query
+    expect(cmd.getQueryCommand()).toBe('QLL')
+
+    // Set
+    expect(cmd.getSetCommand(0)).toBe('DBL:000')
+    expect(cmd.getSetCommand(999)).toBe('DBL:999')
+    expect(cmd.getSetCommand(1234)).toBe('DBL:1234')
+
+    // Parse
+    expect(cmd.parseResponse('000')).toBe(0)
+    expect(cmd.parseResponse('999')).toBe(999)
+    expect(cmd.parseResponse('1234')).toBe(1234)
+})
+
+test('CUSTOM MASKING specification', () => {
+    const cmd = CustomMaskingCommand
+
+    // Query
+    expect(cmd.getQueryCommand()).toBe('QVX:MSKI1')
+
+    // Set
+    expect(cmd.getSetCommand(CustomMasking.OFF)).toBe('VXX:MSKI1=+00000')
+    expect(cmd.getSetCommand(CustomMasking['PC-1'])).toBe('VXX:MSKI1=+00001')
+    expect(cmd.getSetCommand(CustomMasking['PC-2'])).toBe('VXX:MSKI1=+00002')
+    expect(cmd.getSetCommand(CustomMasking['PC-3'])).toBe('VXX:MSKI1=+00003')
+
+    // Parse
+    expect(cmd.parseResponse('MSKI1=+00000')).toBe(CustomMasking.OFF)
+    expect(cmd.parseResponse('MSKI1=+00001')).toBe(CustomMasking['PC-1'])
+    expect(cmd.parseResponse('MSKI1=+00002')).toBe(CustomMasking['PC-2'])
+    expect(cmd.parseResponse('MSKI1=+00003')).toBe(CustomMasking['PC-3'])
+})
+
+test('EDGE BLENDING specification', () => {
+    const cmd = EdgeBlendingCommand
+
+    // Query
+    expect(cmd.getQueryCommand()).toBe('QVX:EDBI0')
+
+    // Set
+    expect(cmd.getSetCommand(EdgeBlending.OFF)).toBe('VXX:EDBI0=+00000')
+    expect(cmd.getSetCommand(EdgeBlending.ON)).toBe('VXX:EDBI0=+00001')
+    expect(cmd.getSetCommand(EdgeBlending.USER)).toBe('VXX:EDBI0=+00002')
+
+    // Parse
+    expect(cmd.parseResponse('EDBI0=+00000')).toBe(EdgeBlending.OFF)
+    expect(cmd.parseResponse('EDBI0=+00001')).toBe(EdgeBlending.ON)
+    expect(cmd.parseResponse('EDBI0=+00002')).toBe(EdgeBlending.USER)
+})
+
+test('COLOR MATCHING specification', () => {
+    const cmd = ColorMatchingCommand
+
+    // Query
+    expect(cmd.getQueryCommand()).toBe('QVX:CMAI0')
+
+    // Set
+    expect(cmd.getSetCommand(ColorMatching.OFF)).toBe('VXX:CMAI0=+00000')
+    expect(cmd.getSetCommand(ColorMatching['3COLORS'])).toBe('VXX:CMAI0=+00001')
+    expect(cmd.getSetCommand(ColorMatching['7COLORS'])).toBe('VXX:CMAI0=+00002')
+    expect(cmd.getSetCommand(ColorMatching.MEASURED)).toBe('VXX:CMAI0=+00004')
+
+    // Parse
+    expect(cmd.parseResponse('CMAI0=+00000')).toBe(ColorMatching.OFF)
+    expect(cmd.parseResponse('CMAI0=+00001')).toBe(ColorMatching['3COLORS'])
+    expect(cmd.parseResponse('CMAI0=+00002')).toBe(ColorMatching['7COLORS'])
+    expect(cmd.parseResponse('CMAI0=+00004')).toBe(ColorMatching.MEASURED)
+})
+
+function testRgbCommand (cmd: GenericCommandInterface<RgbTupple>, setPrefix: string, valuePrefix: string) {
+
+    // Set
+    expect(cmd.getSetCommand({ R:    0, G:    0, B:    0 })).toBe(setPrefix + '0000,0000,0000')
+    expect(cmd.getSetCommand({ R: 2048, G: 2048, B: 2048 })).toBe(setPrefix + '2048,2048,2048')
+    expect(cmd.getSetCommand({ R:  100, G:    0, B:    0 })).toBe(setPrefix + '0100,0000,0000')
+    expect(cmd.getSetCommand({ R:    0, G:  100, B:    0 })).toBe(setPrefix + '0000,0100,0000')
+    expect(cmd.getSetCommand({ R:    0, G:    0, B:  100 })).toBe(setPrefix + '0000,0000,0100')
+
+    // Parse
+    expect(cmd.parseResponse(valuePrefix + '0000,0000,0000')).toStrictEqual({ R:    0, G:    0, B:    0 })
+    expect(cmd.parseResponse(valuePrefix + '2048,2048,2048')).toStrictEqual({ R: 2048, G: 2048, B: 2048 })
+    expect(cmd.parseResponse(valuePrefix + '0100,0000,0000')).toStrictEqual({ R:  100, G:    0, B:    0 })
+    expect(cmd.parseResponse(valuePrefix + '0000,0100,0000')).toStrictEqual({ R:    0, G:  100, B:    0 })
+    expect(cmd.parseResponse(valuePrefix + '0000,0000,0100')).toStrictEqual({ R:    0, G:    0, B:  100 })
+}
+
+test('COLOR MATCHING-3COLORS-RED specification', () => {
+    const cmd = ColorMatching3ColorsRedCommand
+
+    // Query
+    expect(cmd.getQueryCommand()).toBe('QMR')
+
+    // Set + Parse
+    testRgbCommand(cmd, 'VMR:', '')
+})
+
+test('COLOR MATCHING-3COLORS-GREEN specification', () => {
+    const cmd = ColorMatching3ColorsGreenCommand
+
+    // Query
+    expect(cmd.getQueryCommand()).toBe('QMG')
+
+    // Set + Parse
+    testRgbCommand(cmd, 'VMG:', '')
+})
+
+test('COLOR MATCHING-3COLORS-BLUE specification', () => {
+    const cmd = ColorMatching3ColorsBlueCommand
+
+    // Query
+    expect(cmd.getQueryCommand()).toBe('QMB')
+
+    // Set + Parse
+    testRgbCommand(cmd, 'VMB:', '')
+})
+
+test('COLOR MATCHING-3COLORS-WHITE specification', () => {
+    const cmd = ColorMatching3ColorsWhiteCommand
+
+    // Query
+    expect(cmd.getQueryCommand()).toBe('QMW')
+
+    // Set
+    expect(cmd.getSetCommand(256)).toBe('VMW:0256')
+    expect(cmd.getSetCommand(999)).toBe('VMW:0999')
+    expect(cmd.getSetCommand(2048)).toBe('VMW:2048')
+
+    // Parse
+    expect(cmd.parseResponse('0256')).toBe(256)
+    expect(cmd.parseResponse('0999')).toBe(999)
+    expect(cmd.parseResponse('2048')).toBe(2048)
+})
+
+test('COLOR MATCHING-3COLORS-AUTO TESTPATTERN specification', () => {
+    const cmd = ColorMatching3ColorsAutoTestpatternCommand
+
+    // Query
+    expect(cmd.getQueryCommand()).toBe('QVX:CATI0')
+
+    // Set
+    expect(cmd.getSetCommand(true)).toBe('VXX:CATI0=+00001')
+    expect(cmd.getSetCommand(false)).toBe('VXX:CATI0=+00000')
+
+    // Parse
+    expect(cmd.parseResponse('CATI0=+00000')).toBe(false)
+    expect(cmd.parseResponse('CATI0=+00001')).toBe(true)
+})
+
+test('COLOR MATCHING-7COLORS-RED specification', () => {
+    const cmd = ColorMatching7ColorsRedCommand
+    const attr = 'C7CS0'
+
+    // Query
+    expect(cmd.getQueryCommand()).toBe('QVX:' + attr)
+
+    // Set + Parse
+    testRgbCommand(cmd, 'VXX:' + attr + '=', attr + '=')
+})
+
+test('COLOR MATCHING-7COLORS-GREEN specification', () => {
+    const cmd = ColorMatching7ColorsGreenCommand
+    const attr = 'C7CS1'
+
+    // Query
+    expect(cmd.getQueryCommand()).toBe('QVX:' + attr)
+
+    // Set + Parse
+    testRgbCommand(cmd, 'VXX:' + attr + '=', attr + '=')
+})
+
+test('COLOR MATCHING-7COLORS-BLUE specification', () => {
+    const cmd = ColorMatching7ColorsBlueCommand
+    const attr = 'C7CS2'
+
+    // Query
+    expect(cmd.getQueryCommand()).toBe('QVX:' + attr)
+
+    // Set + Parse
+    testRgbCommand(cmd, 'VXX:' + attr + '=', attr + '=')
+})
+
+test('COLOR MATCHING-7COLORS-CYAN specification', () => {
+    const cmd = ColorMatching7ColorsCyanCommand
+    const attr = 'C7CS3'
+
+    // Query
+    expect(cmd.getQueryCommand()).toBe('QVX:' + attr)
+
+    // Set + Parse
+    testRgbCommand(cmd, 'VXX:' + attr + '=', attr + '=')
+})
+
+test('COLOR MATCHING-7COLORS-MAGENTA specification', () => {
+    const cmd = ColorMatching7ColorsMagentaCommand
+    const attr = 'C7CS4'
+
+    // Query
+    expect(cmd.getQueryCommand()).toBe('QVX:' + attr)
+
+    // Set + Parse
+    testRgbCommand(cmd, 'VXX:' + attr + '=', attr + '=')
+})
+
+test('COLOR MATCHING-7COLORS-YELLOW specification', () => {
+    const cmd = ColorMatching7ColorsYellowCommand
+    const attr = 'C7CS5'
+
+    // Query
+    expect(cmd.getQueryCommand()).toBe('QVX:' + attr)
+
+    // Set + Parse
+    testRgbCommand(cmd, 'VXX:' + attr + '=', attr + '=')
+})
+
+test('COLOR MATCHING-7COLORS-WHITE specification', () => {
+    const cmd = ColorMatching7ColorsWhiteCommand
+    const attr = 'C7CS6'
+
+    // Query
+    expect(cmd.getQueryCommand()).toBe('QVX:' + attr)
+
+    // Set + Parse
+    testRgbCommand(cmd, 'VXX:' + attr + '=', attr + '=')
+})
+
+test('COLOR MATCHING-7COLORS-AUTO TESTPATTERN specification', () => {
+    const cmd = ColorMatching7ColorsAutoTestpatternCommand
+
+    // Query
+    expect(cmd.getQueryCommand()).toBe('QVX:CATI1')
+
+    // Set
+    expect(cmd.getSetCommand(true)).toBe('VXX:CATI1=+00001')
+    expect(cmd.getSetCommand(false)).toBe('VXX:CATI1=+00000')
+
+    // Parse
+    expect(cmd.parseResponse('CATI1=+00000')).toBe(false)
+    expect(cmd.parseResponse('CATI1=+00001')).toBe(true)
 })

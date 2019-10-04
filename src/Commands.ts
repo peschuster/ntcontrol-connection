@@ -1,4 +1,4 @@
-import { BooleanCommand, EnumCommand, NumberRangeCommand, ProjectorInput, PictureMode, Geometry, Aspect, ColorMatching, ScreenSetting, ShutterFade, NoSignalShutOff, LensMemory, LampControlStatus, LampStatus, TestPattern, ActionSpeed, ColorTemperature } from './Types'
+import { BooleanCommand, EnumCommand, NumberRangeCommand, RgbCommand, ProjectorInput, PictureMode, Geometry, Aspect, ColorMatching, ScreenSetting, ShutterFade, NoSignalShutOff, LensMemory, LampControlStatus, LampStatus, TestPattern, ActionSpeed, ColorTemperature, EdgeBlending, CustomMasking } from './Types'
 
 // BASIC OPERATION
 export const PowerCommand = new BooleanCommand('PW', '001', '000', (v) => v ? 'PON' : 'POF')
@@ -42,12 +42,31 @@ export const ZoomModeFullCommand = new BooleanCommand('ZT')
 export const ZoomInterlockedCommand = new BooleanCommand('ZS')
 
 // ADVANCED
+export const BlankingUpperCommand = new NumberRangeCommand('BU', 0, 2398, 0, 3, undefined, 'D', 'QLU')
+export const BlankingLowerCommand = new NumberRangeCommand('BB', 0, 2398, 0, 3, undefined, 'D', 'QLB')
+export const BlankingRightCommand = new NumberRangeCommand('BR', 0, 3838, 0, 3, undefined, 'D', 'QLR')
+export const BlankingLeftCommand = new NumberRangeCommand('BL', 0, 3838, 0, 3, undefined, 'D', 'QLL')
+export const CustomMaskingCommand = new EnumCommand<CustomMasking>('XX', undefined, 'MSKI1')
+export const EdgeBlendingCommand = new EnumCommand<EdgeBlending>('XX', undefined, 'EDBI0')
 export const EdgeBlendingMarkerCommand = new BooleanCommand('GM')
 
 export const InputGuidCommand = new BooleanCommand('ID', '1', '0', undefined, () => 'QDI')
 
 // DISPLAY OPTION
 export const ColorMatchingCommand = new EnumCommand<ColorMatching>('XX', undefined, 'CMAI0')
+export const ColorMatching3ColorsRedCommand = new RgbCommand('MR')
+export const ColorMatching3ColorsGreenCommand = new RgbCommand('MG')
+export const ColorMatching3ColorsBlueCommand = new RgbCommand('MB')
+export const ColorMatching3ColorsWhiteCommand = new NumberRangeCommand('MW', 256, 2048, 256, 4)
+export const ColorMatching3ColorsAutoTestpatternCommand = new BooleanCommand('XX', 'CATI0=+00001', 'CATI0=+00000', (value) => 'VXX:' + (value ? 'CATI0=+00001' : 'CATI0=+00000'), () => 'QVX:CATI0')
+export const ColorMatching7ColorsRedCommand = new RgbCommand('XX', 'C7CS0')
+export const ColorMatching7ColorsGreenCommand = new RgbCommand('XX', 'C7CS1')
+export const ColorMatching7ColorsBlueCommand = new RgbCommand('XX', 'C7CS2')
+export const ColorMatching7ColorsCyanCommand = new RgbCommand('XX', 'C7CS3')
+export const ColorMatching7ColorsMagentaCommand = new RgbCommand('XX', 'C7CS4')
+export const ColorMatching7ColorsYellowCommand = new RgbCommand('XX', 'C7CS5')
+export const ColorMatching7ColorsWhiteCommand = new RgbCommand('XX', 'C7CS6')
+export const ColorMatching7ColorsAutoTestpatternCommand = new BooleanCommand('XX', 'CATI1=+00001', 'CATI1=+00000', (value) => 'VXX:' + (value ? 'CATI1=+00001' : 'CATI1=+00000'), () => 'QVX:CATI1')
 
 export const OnScreenCommand = new BooleanCommand('OS')
 export const ScreenSettingCommand = new EnumCommand<ScreenSetting>('SF')

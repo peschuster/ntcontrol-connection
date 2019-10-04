@@ -174,6 +174,27 @@ export enum ActionSpeed {
     'FAST-' = '+00201'
 }
 
+export enum CustomMasking {
+    UNKOWN = '',
+    OFF = '+00000',
+    'PC-1' = '+00001',
+    'PC-2' = '+00002',
+    'PC-3' = '+00003'
+}
+
+export enum EdgeBlending {
+    UNKOWN = '',
+    OFF = '+00000',
+    ON = '+00001',
+    USER = '+00002'
+}
+
+export interface RgbTupple {
+    R: number
+    G: number
+    B: number
+}
+
 export interface CommandInterface {
     name: string
     getQueryCommand (): string
@@ -182,7 +203,7 @@ export interface CommandInterface {
 }
 
 export interface GenericCommandInterface<T> extends CommandInterface {
-    parseResponse (response: string): T
+    parseResponse (response: string): T | undefined
     getSetCommand (value?: T | undefined): string | undefined
 }
 
@@ -346,6 +367,66 @@ export class NumberRangeCommand extends BaseCommand implements GenericCommandInt
                 return this.setPrefix + this.name + ':' + this.subname + '=' + formattedValue
             } else {
                 return this.setPrefix + this.name + ':' + formattedValue
+            }
+        }
+        return undefined
+    }
+}
+
+export class RgbCommand extends BaseCommand implements GenericCommandInterface<RgbTupple> {
+    private subname: string | undefined
+
+    constructor (
+        name: string,
+        subname?: string | undefined,
+        queryCommand?: string | undefined) {
+
+        if (queryCommand === undefined) queryCommand = 'Q' + (name === 'XX' ? 'VX' : name)
+        super(name, () => queryCommand + (subname === undefined ? '' : (':' + subname)))
+
+        this.subname = subname
+    }
+
+    public parseResponse (response: string): RgbTupple | undefined {
+        let value = response
+
+        if (this.subname !== undefined) {
+            const parts = response.split('=')
+            if (parts.length === 2) {
+                value = parts[1]
+            }
+        }
+
+        const tuple = value.split(',')
+        if (tuple.length !== 3) {
+            return undefined
+        }
+
+        return {
+            R: parseInt(tuple[0], 10),
+            G: parseInt(tuple[1], 10),
+            B: parseInt(tuple[2], 10)
+        }
+    }
+
+    private formatValue (value: number): string {
+        const signLessValue = (value < 0) ? (-1 * value) : value
+        let formattedValue = ('' + signLessValue).padStart(4, '0')
+        if (value < 0) {
+            formattedValue = '-' + formattedValue
+        }
+        return formattedValue
+    }
+
+    public getSetCommand (value: RgbTupple): string | undefined {
+        if (value !== undefined) {
+            const parts = [ this.formatValue(value.R), this.formatValue(value.G), this.formatValue(value.B) ]
+            const formattedValue = parts.join(',')
+
+            if (this.subname !== undefined) {
+                return 'V' + this.name + ':' + this.subname + '=' + formattedValue
+            } else {
+                return 'V' + this.name + ':' + formattedValue
             }
         }
         return undefined
