@@ -1,6 +1,5 @@
 import { PowerCommand, InputSelectCommand, FreezeCommand, ShutterCommand, LensShiftHorizontalCommand, LensShiftVerticalCommand, LensFocusCommand, LensZoomCommand, LensPositionHorizontalCommand, LensPositionVerticalCommand, LensPositionFocusCommand, PictureModeCommand, ContrastCommand, BrightnessCommand, ColorCommand, TintCommand, SharpnessCommand, ColorTemperatureCommand } from '../Commands'
-import { ProjectorInput, ActionSpeed, PictureMode, ColorTemperature } from '../Types'
-import { GenericCommandInterface } from '../../dist/Types'
+import { ProjectorInput, ActionSpeed, PictureMode, ColorTemperature, GenericCommandInterface } from '../Types'
 
 test('POWER specification', () => {
     // Query
