@@ -1,70 +1,77 @@
-import { PowerCommand, InputSelectCommand, FreezeCommand, ShutterCommand, LensShiftHorizontalCommand, LensShiftVerticalCommand, LensFocusCommand, LensZoomCommand, LensPositionHorizontalCommand, LensPositionVerticalCommand, LensPositionFocusCommand, PictureModeCommand, ContrastCommand, BrightnessCommand, ColorCommand, TintCommand, SharpnessCommand, ColorTemperatureCommand, WhiteBalanceLowRedCommand, WhiteBalanceLowGreenCommand, WhiteBalanceLowBlueCommand, WhiteBalanceHighRedCommand, WhiteBalanceHighGreenCommand, WhiteBalanceHighBlueCommand, GeometryCommand, AspectCommand, ZoomHorizontalCommand, ZoomBothCommand, ZoomVerticalCommand, ShiftHorizontalCommand, ShiftVerticalCommand, ClockPhaseCommand, ZoomModeFullCommand, ZoomInterlockedCommand, BlankingUpperCommand, BlankingLeftCommand, BlankingRightCommand, BlankingLowerCommand, CustomMaskingCommand, EdgeBlendingCommand, ColorMatchingCommand, ColorMatching3ColorsRedCommand, ColorMatching3ColorsGreenCommand, ColorMatching3ColorsBlueCommand, ColorMatching3ColorsAutoTestpatternCommand, ColorMatching3ColorsWhiteCommand, ColorMatching7ColorsRedCommand, ColorMatching7ColorsBlueCommand, ColorMatching7ColorsGreenCommand, ColorMatching7ColorsCyanCommand, ColorMatching7ColorsMagentaCommand, ColorMatching7ColorsYellowCommand, ColorMatching7ColorsWhiteCommand, ColorMatching7ColorsAutoTestpatternCommand } from '../Commands'
+import * as Command from '../Commands'
 import { ProjectorInput, ActionSpeed, PictureMode, ColorTemperature, GenericCommandInterface, Geometry, Aspect, CustomMasking, EdgeBlending, ColorMatching, RgbTupple } from '../Types'
 
 test('POWER specification', () => {
+    const cmd = Command.PowerCommand
+
     // Query
-    expect(PowerCommand.getQueryCommand()).toBe('QPW')
+    expect(cmd.getQueryCommand()).toBe('QPW')
 
     // Set
-    expect(PowerCommand.getSetCommand(true)).toBe('PON')
-    expect(PowerCommand.getSetCommand(false)).toBe('POF')
+    expect(cmd.getSetCommand(true)).toBe('PON')
+    expect(cmd.getSetCommand(false)).toBe('POF')
 
     // Parse
-    expect(PowerCommand.parseResponse('000')).toBe(false)
-    expect(PowerCommand.parseResponse('001')).toBe(true)
+    expect(cmd.parseResponse('000')).toBe(false)
+    expect(cmd.parseResponse('001')).toBe(true)
 })
 
 test('INPUT SELECT specification', () => {
+    const cmd = Command.InputSelectCommand
+
     // Query
-    expect(InputSelectCommand.getQueryCommand()).toBe('QIN')
+    expect(cmd.getQueryCommand()).toBe('QIN')
 
     // Set
-    expect(InputSelectCommand.getSetCommand(ProjectorInput.COMPUTER1)).toBe('IIS:RG1')
-    expect(InputSelectCommand.getSetCommand(ProjectorInput.COMPUTER2)).toBe('IIS:RG2')
-    expect(InputSelectCommand.getSetCommand(ProjectorInput.VIDEO)).toBe('IIS:VID')
-    expect(InputSelectCommand.getSetCommand(ProjectorInput['Y/C'])).toBe('IIS:SVD')
-    expect(InputSelectCommand.getSetCommand(ProjectorInput.DVI)).toBe('IIS:DVI')
-    expect(InputSelectCommand.getSetCommand(ProjectorInput.HDMI1)).toBe('IIS:HD1')
-    expect(InputSelectCommand.getSetCommand(ProjectorInput.SDI1)).toBe('IIS:SD1')
-    expect(InputSelectCommand.getSetCommand(ProjectorInput.SDI2)).toBe('IIS:SD2')
-    expect(InputSelectCommand.getSetCommand(ProjectorInput['DIGITAL LINK'])).toBe('IIS:DL1')
+    expect(cmd.getSetCommand(ProjectorInput.COMPUTER1)).toBe('IIS:RG1')
+    expect(cmd.getSetCommand(ProjectorInput.COMPUTER2)).toBe('IIS:RG2')
+    expect(cmd.getSetCommand(ProjectorInput.VIDEO)).toBe('IIS:VID')
+    expect(cmd.getSetCommand(ProjectorInput['Y/C'])).toBe('IIS:SVD')
+    expect(cmd.getSetCommand(ProjectorInput.DVI)).toBe('IIS:DVI')
+    expect(cmd.getSetCommand(ProjectorInput.HDMI1)).toBe('IIS:HD1')
+    expect(cmd.getSetCommand(ProjectorInput.SDI1)).toBe('IIS:SD1')
+    expect(cmd.getSetCommand(ProjectorInput.SDI2)).toBe('IIS:SD2')
+    expect(cmd.getSetCommand(ProjectorInput['DIGITAL LINK'])).toBe('IIS:DL1')
 
     // Parse
-    expect(InputSelectCommand.parseResponse('RG1')).toBe(ProjectorInput.COMPUTER1)
-    expect(InputSelectCommand.parseResponse('RG2')).toBe(ProjectorInput.COMPUTER2)
-    expect(InputSelectCommand.parseResponse('VID')).toBe(ProjectorInput.VIDEO)
-    expect(InputSelectCommand.parseResponse('SVD')).toBe(ProjectorInput['Y/C'])
-    expect(InputSelectCommand.parseResponse('DVI')).toBe(ProjectorInput.DVI)
-    expect(InputSelectCommand.parseResponse('HD1')).toBe(ProjectorInput.HDMI1)
-    expect(InputSelectCommand.parseResponse('SD1')).toBe(ProjectorInput.SDI1)
-    expect(InputSelectCommand.parseResponse('SD2')).toBe(ProjectorInput.SDI2)
-    expect(InputSelectCommand.parseResponse('DL1')).toBe(ProjectorInput['DIGITAL LINK'])
+    expect(cmd.parseResponse('RG1')).toBe(ProjectorInput.COMPUTER1)
+    expect(cmd.parseResponse('RG2')).toBe(ProjectorInput.COMPUTER2)
+    expect(cmd.parseResponse('VID')).toBe(ProjectorInput.VIDEO)
+    expect(cmd.parseResponse('SVD')).toBe(ProjectorInput['Y/C'])
+    expect(cmd.parseResponse('DVI')).toBe(ProjectorInput.DVI)
+    expect(cmd.parseResponse('HD1')).toBe(ProjectorInput.HDMI1)
+    expect(cmd.parseResponse('SD1')).toBe(ProjectorInput.SDI1)
+    expect(cmd.parseResponse('SD2')).toBe(ProjectorInput.SDI2)
+    expect(cmd.parseResponse('DL1')).toBe(ProjectorInput['DIGITAL LINK'])
 })
 
 test('FREEZE specification', () => {
+    const cmd = Command.FreezeCommand
     // Query
-    expect(FreezeCommand.getQueryCommand()).toBe('QFZ')
+    expect(cmd.getQueryCommand()).toBe('QFZ')
 
     // Set
-    expect(FreezeCommand.getSetCommand(true)).toBe('OFZ:1')
-    expect(FreezeCommand.getSetCommand(false)).toBe('OFZ:0')
+    expect(cmd.getSetCommand(true)).toBe('OFZ:1')
+    expect(cmd.getSetCommand(false)).toBe('OFZ:0')
 
     // Parse
-    expect(FreezeCommand.parseResponse('0')).toBe(false)
-    expect(FreezeCommand.parseResponse('1')).toBe(true)
+    expect(cmd.parseResponse('0')).toBe(false)
+    expect(cmd.parseResponse('1')).toBe(true)
 })
 
 test('SHUTTER specification', () => {
+    const cmd = Command.ShutterCommand
+
     // Query
-    expect(ShutterCommand.getQueryCommand()).toBe('QSH')
+    expect(cmd.getQueryCommand()).toBe('QSH')
 
     // Set
-    expect(ShutterCommand.getSetCommand(true)).toBe('OSH:1')
-    expect(ShutterCommand.getSetCommand(false)).toBe('OSH:0')
+    expect(cmd.getSetCommand(true)).toBe('OSH:1')
+    expect(cmd.getSetCommand(false)).toBe('OSH:0')
 
     // Parse
-    expect(ShutterCommand.parseResponse('0')).toBe(false)
-    expect(ShutterCommand.parseResponse('1')).toBe(true)
+    expect(cmd.parseResponse('0')).toBe(false)
+    expect(cmd.parseResponse('1')).toBe(true)
 })
 
 function testActionSpeeds (cmd: GenericCommandInterface<ActionSpeed>, variable: string): void {
@@ -86,191 +93,211 @@ function testActionSpeeds (cmd: GenericCommandInterface<ActionSpeed>, variable: 
 }
 
 test('LENS-SHIFT HORIZONTAL specification', () => {
-    testActionSpeeds(LensShiftHorizontalCommand, 'LNSI2')
+    testActionSpeeds(Command.LensShiftHorizontalCommand, 'LNSI2')
 })
 
 test('LENS-SHIFT VERTIVAL specification', () => {
-    testActionSpeeds(LensShiftVerticalCommand, 'LNSI3')
+    testActionSpeeds(Command.LensShiftVerticalCommand, 'LNSI3')
 })
 
 test('LENS FOCUS specification', () => {
-    testActionSpeeds(LensFocusCommand, 'LNSI4')
+    testActionSpeeds(Command.LensFocusCommand, 'LNSI4')
 })
 
 test('LENS ZOOM specification', () => {
-    testActionSpeeds(LensZoomCommand, 'LNSI5')
+    testActionSpeeds(Command.LensZoomCommand, 'LNSI5')
 })
 
 test('LENS POSITION HORIZONTAL specification', () => {
+    const cmd = Command.LensPositionHorizontalCommand
+
     // Query
-    expect(LensPositionHorizontalCommand.getQueryCommand()).toBe('QVX:LNSI7')
+    expect(cmd.getQueryCommand()).toBe('QVX:LNSI7')
 
     // Set
-    expect(LensPositionHorizontalCommand.getSetCommand(-2480)).toBe('VXX:LNSI7=-02480')
-    expect(LensPositionHorizontalCommand.getSetCommand(2480)).toBe('VXX:LNSI7=+02480')
-    expect(LensPositionHorizontalCommand.getSetCommand(-100)).toBe('VXX:LNSI7=-00100')
-    expect(LensPositionHorizontalCommand.getSetCommand(0)).toBe('VXX:LNSI7=+00000')
+    expect(cmd.getSetCommand(-2480)).toBe('VXX:LNSI7=-02480')
+    expect(cmd.getSetCommand(2480)).toBe('VXX:LNSI7=+02480')
+    expect(cmd.getSetCommand(-100)).toBe('VXX:LNSI7=-00100')
+    expect(cmd.getSetCommand(0)).toBe('VXX:LNSI7=+00000')
 
     // Parse
-    expect(LensPositionHorizontalCommand.parseResponse('LNSI7=-02480')).toBe(-2480)
-    expect(LensPositionHorizontalCommand.parseResponse('LNSI7=+02480')).toBe(2480)
-    expect(LensPositionHorizontalCommand.parseResponse('LNSI7=+00000')).toBe(0)
+    expect(cmd.parseResponse('LNSI7=-02480')).toBe(-2480)
+    expect(cmd.parseResponse('LNSI7=+02480')).toBe(2480)
+    expect(cmd.parseResponse('LNSI7=+00000')).toBe(0)
 })
 
 test('LENS POSITION VERTICAL specification', () => {
+    const cmd = Command.LensPositionVerticalCommand
+
     // Query
-    expect(LensPositionVerticalCommand.getQueryCommand()).toBe('QVX:LNSI8')
+    expect(cmd.getQueryCommand()).toBe('QVX:LNSI8')
 
     // Set
-    expect(LensPositionVerticalCommand.getSetCommand(-3200)).toBe('VXX:LNSI8=-03200')
-    expect(LensPositionVerticalCommand.getSetCommand(3200)).toBe('VXX:LNSI8=+03200')
-    expect(LensPositionVerticalCommand.getSetCommand(-100)).toBe('VXX:LNSI8=-00100')
-    expect(LensPositionVerticalCommand.getSetCommand(0)).toBe('VXX:LNSI8=+00000')
+    expect(cmd.getSetCommand(-3200)).toBe('VXX:LNSI8=-03200')
+    expect(cmd.getSetCommand(3200)).toBe('VXX:LNSI8=+03200')
+    expect(cmd.getSetCommand(-100)).toBe('VXX:LNSI8=-00100')
+    expect(cmd.getSetCommand(0)).toBe('VXX:LNSI8=+00000')
 
     // Parse
-    expect(LensPositionVerticalCommand.parseResponse('LNSI8=-03200')).toBe(-3200)
-    expect(LensPositionVerticalCommand.parseResponse('LNSI8=+03200')).toBe(3200)
-    expect(LensPositionVerticalCommand.parseResponse('LNSI8=+00000')).toBe(0)
+    expect(cmd.parseResponse('LNSI8=-03200')).toBe(-3200)
+    expect(cmd.parseResponse('LNSI8=+03200')).toBe(3200)
+    expect(cmd.parseResponse('LNSI8=+00000')).toBe(0)
 })
 
 test('LENS POSITION FOCUS specification', () => {
+    const cmd = Command.LensPositionFocusCommand
+
     // Query
-    expect(LensPositionFocusCommand.getQueryCommand()).toBe('QVX:LNSI9')
+    expect(cmd.getQueryCommand()).toBe('QVX:LNSI9')
 
     // Set
-    expect(LensPositionFocusCommand.getSetCommand(0)).toBe('VXX:LNSI9=+00000')
-    expect(LensPositionFocusCommand.getSetCommand(20)).toBe('VXX:LNSI9=+00020')
-    expect(LensPositionFocusCommand.getSetCommand(2560)).toBe('VXX:LNSI9=+02560')
+    expect(cmd.getSetCommand(0)).toBe('VXX:LNSI9=+00000')
+    expect(cmd.getSetCommand(20)).toBe('VXX:LNSI9=+00020')
+    expect(cmd.getSetCommand(2560)).toBe('VXX:LNSI9=+02560')
 
     // Parse
-    expect(LensPositionFocusCommand.parseResponse('LNSI9=+00000')).toBe(0)
-    expect(LensPositionFocusCommand.parseResponse('LNSI9=+00020')).toBe(20)
-    expect(LensPositionFocusCommand.parseResponse('LNSI9=+02560')).toBe(2560)
+    expect(cmd.parseResponse('LNSI9=+00000')).toBe(0)
+    expect(cmd.parseResponse('LNSI9=+00020')).toBe(20)
+    expect(cmd.parseResponse('LNSI9=+02560')).toBe(2560)
 })
 
 test('PICTURE MODE specification', () => {
+    const cmd = Command.PictureModeCommand
+
     // Query
-    expect(PictureModeCommand.getQueryCommand()).toBe('QPM')
+    expect(cmd.getQueryCommand()).toBe('QPM')
 
     // Set
-    expect(PictureModeCommand.getSetCommand(PictureMode.DYNAMIC)).toBe('VPM:DYN')
-    expect(PictureModeCommand.getSetCommand(PictureMode.NATURAL)).toBe('VPM:NAT')
-    expect(PictureModeCommand.getSetCommand(PictureMode.STANDARD)).toBe('VPM:STD')
-    expect(PictureModeCommand.getSetCommand(PictureMode.CINEMA)).toBe('VPM:CIN')
-    expect(PictureModeCommand.getSetCommand(PictureMode.GRAPHIC)).toBe('VPM:GRA')
-    expect(PictureModeCommand.getSetCommand(PictureMode['DICOM SIM'])).toBe('VPM:DIC')
-    expect(PictureModeCommand.getSetCommand(PictureMode.USER)).toBe('VPM:USR')
+    expect(cmd.getSetCommand(PictureMode.DYNAMIC)).toBe('VPM:DYN')
+    expect(cmd.getSetCommand(PictureMode.NATURAL)).toBe('VPM:NAT')
+    expect(cmd.getSetCommand(PictureMode.STANDARD)).toBe('VPM:STD')
+    expect(cmd.getSetCommand(PictureMode.CINEMA)).toBe('VPM:CIN')
+    expect(cmd.getSetCommand(PictureMode.GRAPHIC)).toBe('VPM:GRA')
+    expect(cmd.getSetCommand(PictureMode['DICOM SIM'])).toBe('VPM:DIC')
+    expect(cmd.getSetCommand(PictureMode.USER)).toBe('VPM:USR')
 
     // Parse
-    expect(PictureModeCommand.parseResponse('DYN')).toBe(PictureMode.DYNAMIC)
-    expect(PictureModeCommand.parseResponse('NAT')).toBe(PictureMode.NATURAL)
-    expect(PictureModeCommand.parseResponse('STD')).toBe(PictureMode.STANDARD)
-    expect(PictureModeCommand.parseResponse('CIN')).toBe(PictureMode.CINEMA)
-    expect(PictureModeCommand.parseResponse('GRA')).toBe(PictureMode.GRAPHIC)
-    expect(PictureModeCommand.parseResponse('DIC')).toBe(PictureMode['DICOM SIM'])
-    expect(PictureModeCommand.parseResponse('USR')).toBe(PictureMode.USER)
+    expect(cmd.parseResponse('DYN')).toBe(PictureMode.DYNAMIC)
+    expect(cmd.parseResponse('NAT')).toBe(PictureMode.NATURAL)
+    expect(cmd.parseResponse('STD')).toBe(PictureMode.STANDARD)
+    expect(cmd.parseResponse('CIN')).toBe(PictureMode.CINEMA)
+    expect(cmd.parseResponse('GRA')).toBe(PictureMode.GRAPHIC)
+    expect(cmd.parseResponse('DIC')).toBe(PictureMode['DICOM SIM'])
+    expect(cmd.parseResponse('USR')).toBe(PictureMode.USER)
 })
 
 test('CONTRAST specification', () => {
+    const cmd = Command.ContrastCommand
+
     // Query
-    expect(ContrastCommand.getQueryCommand()).toBe('QVR')
+    expect(cmd.getQueryCommand()).toBe('QVR')
 
     // Set
-    expect(ContrastCommand.getSetCommand(-31)).toBe('VCN:001')
-    expect(ContrastCommand.getSetCommand(0)).toBe('VCN:032')
-    expect(ContrastCommand.getSetCommand(31)).toBe('VCN:063')
+    expect(cmd.getSetCommand(-31)).toBe('VCN:001')
+    expect(cmd.getSetCommand(0)).toBe('VCN:032')
+    expect(cmd.getSetCommand(31)).toBe('VCN:063')
 
     // Parse
-    expect(ContrastCommand.parseResponse('001')).toBe(-31)
-    expect(ContrastCommand.parseResponse('032')).toBe(0)
-    expect(ContrastCommand.parseResponse('063')).toBe(31)
+    expect(cmd.parseResponse('001')).toBe(-31)
+    expect(cmd.parseResponse('032')).toBe(0)
+    expect(cmd.parseResponse('063')).toBe(31)
 })
 
 test('BRIGHTNESS specification', () => {
+    const cmd = Command.BrightnessCommand
+
     // Query
-    expect(BrightnessCommand.getQueryCommand()).toBe('QVB')
+    expect(cmd.getQueryCommand()).toBe('QVB')
 
     // Set
-    expect(BrightnessCommand.getSetCommand(-31)).toBe('VBR:001')
-    expect(BrightnessCommand.getSetCommand(0)).toBe('VBR:032')
-    expect(BrightnessCommand.getSetCommand(31)).toBe('VBR:063')
+    expect(cmd.getSetCommand(-31)).toBe('VBR:001')
+    expect(cmd.getSetCommand(0)).toBe('VBR:032')
+    expect(cmd.getSetCommand(31)).toBe('VBR:063')
 
     // Parse
-    expect(BrightnessCommand.parseResponse('001')).toBe(-31)
-    expect(BrightnessCommand.parseResponse('032')).toBe(0)
-    expect(BrightnessCommand.parseResponse('063')).toBe(31)
+    expect(cmd.parseResponse('001')).toBe(-31)
+    expect(cmd.parseResponse('032')).toBe(0)
+    expect(cmd.parseResponse('063')).toBe(31)
 })
 
 test('COLOR specification', () => {
+    const cmd = Command.ColorCommand
+
     // Query
-    expect(ColorCommand.getQueryCommand()).toBe('QVC')
+    expect(cmd.getQueryCommand()).toBe('QVC')
 
     // Set
-    expect(ColorCommand.getSetCommand(-31)).toBe('VCO:001')
-    expect(ColorCommand.getSetCommand(0)).toBe('VCO:032')
-    expect(ColorCommand.getSetCommand(31)).toBe('VCO:063')
+    expect(cmd.getSetCommand(-31)).toBe('VCO:001')
+    expect(cmd.getSetCommand(0)).toBe('VCO:032')
+    expect(cmd.getSetCommand(31)).toBe('VCO:063')
 
     // Parse
-    expect(ColorCommand.parseResponse('001')).toBe(-31)
-    expect(ColorCommand.parseResponse('032')).toBe(0)
-    expect(ColorCommand.parseResponse('063')).toBe(31)
+    expect(cmd.parseResponse('001')).toBe(-31)
+    expect(cmd.parseResponse('032')).toBe(0)
+    expect(cmd.parseResponse('063')).toBe(31)
 })
 
 test('TINT specification', () => {
+    const cmd = Command.TintCommand
+
     // Query
-    expect(TintCommand.getQueryCommand()).toBe('QVT')
+    expect(cmd.getQueryCommand()).toBe('QVT')
 
     // Set
-    expect(TintCommand.getSetCommand(-31)).toBe('VTN:001')
-    expect(TintCommand.getSetCommand(0)).toBe('VTN:032')
-    expect(TintCommand.getSetCommand(31)).toBe('VTN:063')
+    expect(cmd.getSetCommand(-31)).toBe('VTN:001')
+    expect(cmd.getSetCommand(0)).toBe('VTN:032')
+    expect(cmd.getSetCommand(31)).toBe('VTN:063')
 
     // Parse
-    expect(TintCommand.parseResponse('001')).toBe(-31)
-    expect(TintCommand.parseResponse('032')).toBe(0)
-    expect(TintCommand.parseResponse('063')).toBe(31)
+    expect(cmd.parseResponse('001')).toBe(-31)
+    expect(cmd.parseResponse('032')).toBe(0)
+    expect(cmd.parseResponse('063')).toBe(31)
 })
 
 test('SHARPNESS specification', () => {
+    const cmd = Command.SharpnessCommand
+
     // Query
-    expect(SharpnessCommand.getQueryCommand()).toBe('QVS')
+    expect(cmd.getQueryCommand()).toBe('QVS')
 
     // Set
-    expect(SharpnessCommand.getSetCommand(0)).toBe('VSR:000')
-    expect(SharpnessCommand.getSetCommand(5)).toBe('VSR:005')
-    expect(SharpnessCommand.getSetCommand(15)).toBe('VSR:015')
+    expect(cmd.getSetCommand(0)).toBe('VSR:000')
+    expect(cmd.getSetCommand(5)).toBe('VSR:005')
+    expect(cmd.getSetCommand(15)).toBe('VSR:015')
 
     // Parse
-    expect(SharpnessCommand.parseResponse('000')).toBe(0)
-    expect(SharpnessCommand.parseResponse('005')).toBe(5)
-    expect(SharpnessCommand.parseResponse('015')).toBe(15)
+    expect(cmd.parseResponse('000')).toBe(0)
+    expect(cmd.parseResponse('005')).toBe(5)
+    expect(cmd.parseResponse('015')).toBe(15)
 })
 
 test('COLOR TEMPERATURE specification', () => {
+    const cmd = Command.ColorTemperatureCommand
+
     // Query
-    expect(ColorTemperatureCommand.getQueryCommand()).toBe('QTE')
+    expect(cmd.getQueryCommand()).toBe('QTE')
 
     // Set
-    expect(ColorTemperatureCommand.getSetCommand(ColorTemperature.DEFAULT)).toBe('OTE:1')
-    expect(ColorTemperatureCommand.getSetCommand(ColorTemperature.USER1)).toBe('OTE:04')
-    expect(ColorTemperatureCommand.getSetCommand(ColorTemperature.USER2)).toBe('OTE:09')
-    expect(ColorTemperatureCommand.getSetCommand(ColorTemperature['3200K'])).toBe('OTE:3200')
-    expect(ColorTemperatureCommand.getSetCommand(ColorTemperature['3300K'])).toBe('OTE:3300')
-    expect(ColorTemperatureCommand.getSetCommand(ColorTemperature['9200K'])).toBe('OTE:9200')
-    expect(ColorTemperatureCommand.getSetCommand(ColorTemperature['9300K'])).toBe('OTE:9300')
+    expect(cmd.getSetCommand(ColorTemperature.DEFAULT)).toBe('OTE:1')
+    expect(cmd.getSetCommand(ColorTemperature.USER1)).toBe('OTE:04')
+    expect(cmd.getSetCommand(ColorTemperature.USER2)).toBe('OTE:09')
+    expect(cmd.getSetCommand(ColorTemperature['3200K'])).toBe('OTE:3200')
+    expect(cmd.getSetCommand(ColorTemperature['3300K'])).toBe('OTE:3300')
+    expect(cmd.getSetCommand(ColorTemperature['9200K'])).toBe('OTE:9200')
+    expect(cmd.getSetCommand(ColorTemperature['9300K'])).toBe('OTE:9300')
 
     // Parse
-    expect(ColorTemperatureCommand.parseResponse('1')).toBe(ColorTemperature.DEFAULT)
-    expect(ColorTemperatureCommand.parseResponse('04')).toBe(ColorTemperature.USER1)
-    expect(ColorTemperatureCommand.parseResponse('09')).toBe(ColorTemperature.USER2)
-    expect(ColorTemperatureCommand.parseResponse('3200')).toBe(ColorTemperature['3200K'])
-    expect(ColorTemperatureCommand.parseResponse('3300')).toBe(ColorTemperature['3300K'])
-    expect(ColorTemperatureCommand.parseResponse('9200')).toBe(ColorTemperature['9200K'])
-    expect(ColorTemperatureCommand.parseResponse('9300')).toBe(ColorTemperature['9300K'])
+    expect(cmd.parseResponse('1')).toBe(ColorTemperature.DEFAULT)
+    expect(cmd.parseResponse('04')).toBe(ColorTemperature.USER1)
+    expect(cmd.parseResponse('09')).toBe(ColorTemperature.USER2)
+    expect(cmd.parseResponse('3200')).toBe(ColorTemperature['3200K'])
+    expect(cmd.parseResponse('3300')).toBe(ColorTemperature['3300K'])
+    expect(cmd.parseResponse('9200')).toBe(ColorTemperature['9200K'])
+    expect(cmd.parseResponse('9300')).toBe(ColorTemperature['9300K'])
 })
 
 test('WHITE BALANCE LOW RED specification', () => {
-    const cmd = WhiteBalanceLowRedCommand
+    const cmd = Command.WhiteBalanceLowRedCommand
 
     // Query
     expect(cmd.getQueryCommand()).toBe('QOR')
@@ -287,7 +314,7 @@ test('WHITE BALANCE LOW RED specification', () => {
 })
 
 test('WHITE BALANCE LOW Greem specification', () => {
-    const cmd = WhiteBalanceLowGreenCommand
+    const cmd = Command.WhiteBalanceLowGreenCommand
 
     // Query
     expect(cmd.getQueryCommand()).toBe('QOG')
@@ -304,7 +331,7 @@ test('WHITE BALANCE LOW Greem specification', () => {
 })
 
 test('WHITE BALANCE LOW BLUE specification', () => {
-    const cmd = WhiteBalanceLowBlueCommand
+    const cmd = Command.WhiteBalanceLowBlueCommand
 
     // Query
     expect(cmd.getQueryCommand()).toBe('QOB')
@@ -321,7 +348,7 @@ test('WHITE BALANCE LOW BLUE specification', () => {
 })
 
 test('WHITE BALANCE HIGH RED specification', () => {
-    const cmd = WhiteBalanceHighRedCommand
+    const cmd = Command.WhiteBalanceHighRedCommand
 
     // Query
     expect(cmd.getQueryCommand()).toBe('QHR')
@@ -338,7 +365,7 @@ test('WHITE BALANCE HIGH RED specification', () => {
 })
 
 test('WHITE BALANCE HIGH GREEN specification', () => {
-    const cmd = WhiteBalanceHighGreenCommand
+    const cmd = Command.WhiteBalanceHighGreenCommand
 
     // Query
     expect(cmd.getQueryCommand()).toBe('QHG')
@@ -355,7 +382,7 @@ test('WHITE BALANCE HIGH GREEN specification', () => {
 })
 
 test('WHITE BALANCE HIGH BLUE specification', () => {
-    const cmd = WhiteBalanceHighBlueCommand
+    const cmd = Command.WhiteBalanceHighBlueCommand
 
     // Query
     expect(cmd.getQueryCommand()).toBe('QHB')
@@ -372,7 +399,7 @@ test('WHITE BALANCE HIGH BLUE specification', () => {
 })
 
 test('GEOMETRY specification', () => {
-    const cmd = GeometryCommand
+    const cmd = Command.GeometryCommand
 
     // Query
     expect(cmd.getQueryCommand()).toBe('QVX:GMMI0')
@@ -397,7 +424,7 @@ test('GEOMETRY specification', () => {
 })
 
 test('SHIFT-HORIZONATL specification', () => {
-    const cmd = ShiftHorizontalCommand
+    const cmd = Command.ShiftHorizontalCommand
 
     // Query
     expect(cmd.getQueryCommand()).toBe('QTH')
@@ -414,7 +441,7 @@ test('SHIFT-HORIZONATL specification', () => {
 })
 
 test('SHIFT-VERTICAL specification', () => {
-    const cmd = ShiftVerticalCommand
+    const cmd = Command.ShiftVerticalCommand
 
     // Query
     expect(cmd.getQueryCommand()).toBe('QTV')
@@ -431,7 +458,7 @@ test('SHIFT-VERTICAL specification', () => {
 })
 
 test('CLOCK PHASE specification', () => {
-    const cmd = ClockPhaseCommand
+    const cmd = Command.ClockPhaseCommand
 
     // Query
     expect(cmd.getQueryCommand()).toBe('QCP')
@@ -448,7 +475,7 @@ test('CLOCK PHASE specification', () => {
 })
 
 test('ASPECT specification', () => {
-    const cmd = AspectCommand
+    const cmd = Command.AspectCommand
 
     // Query
     expect(cmd.getQueryCommand()).toBe('QSE')
@@ -488,45 +515,45 @@ function testZoomCommand (cmd: GenericCommandInterface<number>, name: string) {
 }
 
 test('ZOOM-HORIZONTAL specification', () => {
-    testZoomCommand(ZoomHorizontalCommand, 'ZH')
+    testZoomCommand(Command.ZoomHorizontalCommand, 'ZH')
 })
 
 test('ZOOM-VERTICAL specification', () => {
-    testZoomCommand(ZoomVerticalCommand, 'ZV')
+    testZoomCommand(Command.ZoomVerticalCommand, 'ZV')
 })
 
 test('ZOOM-BOTH specification', () => {
-    testZoomCommand(ZoomBothCommand, 'ZO')
+    testZoomCommand(Command.ZoomBothCommand, 'ZO')
 })
 
 test('ZOOM-INTERLOCKED specification', () => {
     // Query
-    expect(ZoomInterlockedCommand.getQueryCommand()).toBe('QZS')
+    expect(Command.ZoomInterlockedCommand.getQueryCommand()).toBe('QZS')
 
     // Set
-    expect(ZoomInterlockedCommand.getSetCommand(true)).toBe('OZS:1')
-    expect(ZoomInterlockedCommand.getSetCommand(false)).toBe('OZS:0')
+    expect(Command.ZoomInterlockedCommand.getSetCommand(true)).toBe('OZS:1')
+    expect(Command.ZoomInterlockedCommand.getSetCommand(false)).toBe('OZS:0')
 
     // Parse
-    expect(ZoomInterlockedCommand.parseResponse('0')).toBe(false)
-    expect(ZoomInterlockedCommand.parseResponse('1')).toBe(true)
+    expect(Command.ZoomInterlockedCommand.parseResponse('0')).toBe(false)
+    expect(Command.ZoomInterlockedCommand.parseResponse('1')).toBe(true)
 })
 
 test('ZOOM-MODE specification', () => {
     // Query
-    expect(ZoomModeFullCommand.getQueryCommand()).toBe('QZT')
+    expect(Command.ZoomModeFullCommand.getQueryCommand()).toBe('QZT')
 
     // Set
-    expect(ZoomModeFullCommand.getSetCommand(true)).toBe('OZT:1')
-    expect(ZoomModeFullCommand.getSetCommand(false)).toBe('OZT:0')
+    expect(Command.ZoomModeFullCommand.getSetCommand(true)).toBe('OZT:1')
+    expect(Command.ZoomModeFullCommand.getSetCommand(false)).toBe('OZT:0')
 
     // Parse
-    expect(ZoomModeFullCommand.parseResponse('0')).toBe(false)
-    expect(ZoomModeFullCommand.parseResponse('1')).toBe(true)
+    expect(Command.ZoomModeFullCommand.parseResponse('0')).toBe(false)
+    expect(Command.ZoomModeFullCommand.parseResponse('1')).toBe(true)
 })
 
 test('BLANKING-UPPER specification', () => {
-    const cmd = BlankingUpperCommand
+    const cmd = Command.BlankingUpperCommand
 
     // Query
     expect(cmd.getQueryCommand()).toBe('QLU')
@@ -543,7 +570,7 @@ test('BLANKING-UPPER specification', () => {
 })
 
 test('BLANKING-LOWER specification', () => {
-    const cmd = BlankingLowerCommand
+    const cmd = Command.BlankingLowerCommand
 
     // Query
     expect(cmd.getQueryCommand()).toBe('QLB')
@@ -560,7 +587,7 @@ test('BLANKING-LOWER specification', () => {
 })
 
 test('BLANKING-RIGHT specification', () => {
-    const cmd = BlankingRightCommand
+    const cmd = Command.BlankingRightCommand
 
     // Query
     expect(cmd.getQueryCommand()).toBe('QLR')
@@ -577,7 +604,7 @@ test('BLANKING-RIGHT specification', () => {
 })
 
 test('BLANKING-LEFT specification', () => {
-    const cmd = BlankingLeftCommand
+    const cmd = Command.BlankingLeftCommand
 
     // Query
     expect(cmd.getQueryCommand()).toBe('QLL')
@@ -594,7 +621,7 @@ test('BLANKING-LEFT specification', () => {
 })
 
 test('CUSTOM MASKING specification', () => {
-    const cmd = CustomMaskingCommand
+    const cmd = Command.CustomMaskingCommand
 
     // Query
     expect(cmd.getQueryCommand()).toBe('QVX:MSKI1')
@@ -613,7 +640,7 @@ test('CUSTOM MASKING specification', () => {
 })
 
 test('EDGE BLENDING specification', () => {
-    const cmd = EdgeBlendingCommand
+    const cmd = Command.EdgeBlendingCommand
 
     // Query
     expect(cmd.getQueryCommand()).toBe('QVX:EDBI0')
@@ -630,7 +657,7 @@ test('EDGE BLENDING specification', () => {
 })
 
 test('COLOR MATCHING specification', () => {
-    const cmd = ColorMatchingCommand
+    const cmd = Command.ColorMatchingCommand
 
     // Query
     expect(cmd.getQueryCommand()).toBe('QVX:CMAI0')
@@ -666,7 +693,7 @@ function testRgbCommand (cmd: GenericCommandInterface<RgbTupple>, setPrefix: str
 }
 
 test('COLOR MATCHING-3COLORS-RED specification', () => {
-    const cmd = ColorMatching3ColorsRedCommand
+    const cmd = Command.ColorMatching3ColorsRedCommand
 
     // Query
     expect(cmd.getQueryCommand()).toBe('QMR')
@@ -676,7 +703,7 @@ test('COLOR MATCHING-3COLORS-RED specification', () => {
 })
 
 test('COLOR MATCHING-3COLORS-GREEN specification', () => {
-    const cmd = ColorMatching3ColorsGreenCommand
+    const cmd = Command.ColorMatching3ColorsGreenCommand
 
     // Query
     expect(cmd.getQueryCommand()).toBe('QMG')
@@ -686,7 +713,7 @@ test('COLOR MATCHING-3COLORS-GREEN specification', () => {
 })
 
 test('COLOR MATCHING-3COLORS-BLUE specification', () => {
-    const cmd = ColorMatching3ColorsBlueCommand
+    const cmd = Command.ColorMatching3ColorsBlueCommand
 
     // Query
     expect(cmd.getQueryCommand()).toBe('QMB')
@@ -696,7 +723,7 @@ test('COLOR MATCHING-3COLORS-BLUE specification', () => {
 })
 
 test('COLOR MATCHING-3COLORS-WHITE specification', () => {
-    const cmd = ColorMatching3ColorsWhiteCommand
+    const cmd = Command.ColorMatching3ColorsWhiteCommand
 
     // Query
     expect(cmd.getQueryCommand()).toBe('QMW')
@@ -713,7 +740,7 @@ test('COLOR MATCHING-3COLORS-WHITE specification', () => {
 })
 
 test('COLOR MATCHING-3COLORS-AUTO TESTPATTERN specification', () => {
-    const cmd = ColorMatching3ColorsAutoTestpatternCommand
+    const cmd = Command.ColorMatching3ColorsAutoTestpatternCommand
 
     // Query
     expect(cmd.getQueryCommand()).toBe('QVX:CATI0')
@@ -728,7 +755,7 @@ test('COLOR MATCHING-3COLORS-AUTO TESTPATTERN specification', () => {
 })
 
 test('COLOR MATCHING-7COLORS-RED specification', () => {
-    const cmd = ColorMatching7ColorsRedCommand
+    const cmd = Command.ColorMatching7ColorsRedCommand
     const attr = 'C7CS0'
 
     // Query
@@ -739,7 +766,7 @@ test('COLOR MATCHING-7COLORS-RED specification', () => {
 })
 
 test('COLOR MATCHING-7COLORS-GREEN specification', () => {
-    const cmd = ColorMatching7ColorsGreenCommand
+    const cmd = Command.ColorMatching7ColorsGreenCommand
     const attr = 'C7CS1'
 
     // Query
@@ -750,7 +777,7 @@ test('COLOR MATCHING-7COLORS-GREEN specification', () => {
 })
 
 test('COLOR MATCHING-7COLORS-BLUE specification', () => {
-    const cmd = ColorMatching7ColorsBlueCommand
+    const cmd = Command.ColorMatching7ColorsBlueCommand
     const attr = 'C7CS2'
 
     // Query
@@ -761,7 +788,7 @@ test('COLOR MATCHING-7COLORS-BLUE specification', () => {
 })
 
 test('COLOR MATCHING-7COLORS-CYAN specification', () => {
-    const cmd = ColorMatching7ColorsCyanCommand
+    const cmd = Command.ColorMatching7ColorsCyanCommand
     const attr = 'C7CS3'
 
     // Query
@@ -772,7 +799,7 @@ test('COLOR MATCHING-7COLORS-CYAN specification', () => {
 })
 
 test('COLOR MATCHING-7COLORS-MAGENTA specification', () => {
-    const cmd = ColorMatching7ColorsMagentaCommand
+    const cmd = Command.ColorMatching7ColorsMagentaCommand
     const attr = 'C7CS4'
 
     // Query
@@ -783,7 +810,7 @@ test('COLOR MATCHING-7COLORS-MAGENTA specification', () => {
 })
 
 test('COLOR MATCHING-7COLORS-YELLOW specification', () => {
-    const cmd = ColorMatching7ColorsYellowCommand
+    const cmd = Command.ColorMatching7ColorsYellowCommand
     const attr = 'C7CS5'
 
     // Query
@@ -794,7 +821,7 @@ test('COLOR MATCHING-7COLORS-YELLOW specification', () => {
 })
 
 test('COLOR MATCHING-7COLORS-WHITE specification', () => {
-    const cmd = ColorMatching7ColorsWhiteCommand
+    const cmd = Command.ColorMatching7ColorsWhiteCommand
     const attr = 'C7CS6'
 
     // Query
@@ -805,7 +832,7 @@ test('COLOR MATCHING-7COLORS-WHITE specification', () => {
 })
 
 test('COLOR MATCHING-7COLORS-AUTO TESTPATTERN specification', () => {
-    const cmd = ColorMatching7ColorsAutoTestpatternCommand
+    const cmd = Command.ColorMatching7ColorsAutoTestpatternCommand
 
     // Query
     expect(cmd.getQueryCommand()).toBe('QVX:CATI1')
