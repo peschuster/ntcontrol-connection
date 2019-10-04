@@ -11,9 +11,12 @@ test('POWER specification', () => {
     expect(cmd.getSetCommand(true)).toBe('PON')
     expect(cmd.getSetCommand(false)).toBe('POF')
 
+    expect(cmd.getSetCommand(undefined)).toBe('P')
+
     // Parse
     expect(cmd.parseResponse('000')).toBe(false)
     expect(cmd.parseResponse('001')).toBe(true)
+    expect(cmd.parseResponse('')).toBe(undefined)
 })
 
 test('INPUT SELECT specification', () => {
@@ -119,11 +122,13 @@ test('LENS POSITION HORIZONTAL specification', () => {
     expect(cmd.getSetCommand(2480)).toBe('VXX:LNSI7=+02480')
     expect(cmd.getSetCommand(-100)).toBe('VXX:LNSI7=-00100')
     expect(cmd.getSetCommand(0)).toBe('VXX:LNSI7=+00000')
+    expect(cmd.getSetCommand(undefined)).toBe('VXX:LNSI7=')
 
     // Parse
     expect(cmd.parseResponse('LNSI7=-02480')).toBe(-2480)
     expect(cmd.parseResponse('LNSI7=+02480')).toBe(2480)
     expect(cmd.parseResponse('LNSI7=+00000')).toBe(0)
+    expect(cmd.parseResponse('')).toBe(undefined)
 })
 
 test('LENS POSITION VERTICAL specification', () => {
@@ -668,6 +673,8 @@ test('COLOR MATCHING specification', () => {
     expect(cmd.getSetCommand(ColorMatching['7COLORS'])).toBe('VXX:CMAI0=+00002')
     expect(cmd.getSetCommand(ColorMatching.MEASURED)).toBe('VXX:CMAI0=+00004')
 
+    expect(cmd.getSetCommand(undefined)).toBe('VXX:CMAI0=')
+
     // Parse
     expect(cmd.parseResponse('CMAI0=+00000')).toBe(ColorMatching.OFF)
     expect(cmd.parseResponse('CMAI0=+00001')).toBe(ColorMatching['3COLORS'])
@@ -684,12 +691,16 @@ function testRgbCommand (cmd: GenericCommandInterface<RgbValue>, setPrefix: stri
     expect(cmd.getSetCommand({ R:    0, G:  100, B:    0 })).toBe(setPrefix + '0000,0100,0000')
     expect(cmd.getSetCommand({ R:    0, G:    0, B:  100 })).toBe(setPrefix + '0000,0000,0100')
 
+    expect(cmd.getSetCommand(undefined)).toBe(setPrefix + '')
+
     // Parse
     expect(cmd.parseResponse(valuePrefix + '0000,0000,0000')).toStrictEqual({ R:    0, G:    0, B:    0 })
     expect(cmd.parseResponse(valuePrefix + '2048,2048,2048')).toStrictEqual({ R: 2048, G: 2048, B: 2048 })
     expect(cmd.parseResponse(valuePrefix + '0100,0000,0000')).toStrictEqual({ R:  100, G:    0, B:    0 })
     expect(cmd.parseResponse(valuePrefix + '0000,0100,0000')).toStrictEqual({ R:    0, G:  100, B:    0 })
     expect(cmd.parseResponse(valuePrefix + '0000,0000,0100')).toStrictEqual({ R:    0, G:    0, B:  100 })
+
+    expect(cmd.parseResponse(valuePrefix + '0000')).toBe(undefined)
 }
 
 test('COLOR MATCHING-3COLORS-RED specification', () => {

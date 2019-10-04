@@ -225,7 +225,8 @@ export class NumberConverter implements ConverterInterface<number> {
     }
 
     public parse (value: string): number | undefined {
-        return parseInt(value, 10) - this.offset
+        const result = parseInt(value, 10) - this.offset
+        return isNaN(result) ? undefined : result
     }
 
     public format (value: number | undefined): string {
