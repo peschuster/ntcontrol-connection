@@ -35,7 +35,7 @@ const DEFAULT_RECONNECT_INTERVAL: number = 2000
 
 const tcpSockets: net.Socket[] = []
 
-const debug: (msg: string) => void = console.log
+const debug: (msg: string) => void = () => { /* NOP */ }
 
 export class TcpClient extends EventEmitter {
 

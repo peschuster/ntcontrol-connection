@@ -1,26 +1,92 @@
 import { EventEmitter } from 'events'
-import { NtControlConnection } from './NtControlConnection'
+import { Client } from './Client'
 
-import { ProjectorInput, CommandInterface, GenericCommandInterface } from './Types'
+import { ProjectorInput, CommandInterface, GenericCommandInterface, LampStatus } from './Types'
 
 import * as Commands from './Commands'
+import { ResponseCode } from './Responses'
 
 const EMPTY_LAMBDA = () => { /* nop */ }
 
 interface ProjectorState {
-    power: boolean
-    freeze: boolean
-    shutter: boolean
-    lamps: number
-    input: ProjectorInput | string
+    power: CommandState<boolean>
+    freeze: CommandState<boolean>
+    shutter: CommandState<boolean>
+    lamps: CommandState<LampStatus>
+    input: CommandState<ProjectorInput>
 }
 
-enum ProjectorQueryOperation {
-    Power,
-    Shutter,
-    Freeze,
-    Input,
-    Lamps
+interface UnsupportedCommandListInterface {
+    [model: string]: string[] | undefined
+}
+
+class CommandSupportCache {
+    private cache: UnsupportedCommandListInterface = {}
+
+    public isSupported (model: string | undefined, cmd: string): boolean {
+        if (model === undefined) return true
+        return !(this.cache[model] || []).includes(cmd)
+    }
+
+    public markUnsupported (model: string | undefined, cmd: string): void {
+        if (model === undefined) return
+
+        if (this.cache[model] === undefined) {
+            this.cache[model] = [ cmd ]
+        } else {
+            (this.cache[model] || []).push(cmd)
+        }
+    }
+}
+
+interface CommandStateInterface {
+    disabled: boolean
+    queryValue (): Promise<any>
+}
+
+class CommandState<T> implements CommandStateInterface {
+    private cmd: GenericCommandInterface<T>
+
+    private connection: Client
+
+    private value: T | undefined
+
+    public disabled: boolean = false
+
+    private changed: ((v: T | undefined) => void) | undefined
+
+    constructor (cmd: GenericCommandInterface<T>, connection: Client, changed?: (v: T | undefined) => void) {
+        this.cmd = cmd
+        this.connection = connection
+        this.changed = changed
+    }
+
+    public queryValue (): Promise<T> {
+        return new Promise((resolve, reject) => {
+            this.connection.sendCommand(this.cmd.getQueryCommand())
+                .then(response => {
+                    const value = this.cmd.parseResponse(response || '')
+                    if (this.value !== value) {
+                        this.value = value
+                        if (this.changed !== undefined) {
+                            this.changed(value)
+                        }
+                    }
+                    resolve(value)
+                },
+                err => {
+                    if (err === ResponseCode.ER401 || err.message === ResponseCode.ER401) {
+                        this.disabled = true
+                        this.value = undefined
+                    }
+                    reject(err)
+                })
+        })
+    }
+
+    public getValue (): T | undefined {
+        return this.value
+    }
 }
 
 export class Projector extends EventEmitter {
@@ -29,26 +95,36 @@ export class Projector extends EventEmitter {
 
     public name: string | undefined
 
-    private connection: NtControlConnection
+    private connection: Client
 
     private state: ProjectorState
 
-    private nextQueryOperation: ProjectorQueryOperation = ProjectorQueryOperation.Power
+    private queryList: CommandStateInterface[] = []
+
+    private queryIndex: number = 0
 
     private queryStateInterval: any
 
-    constructor (connection: NtControlConnection) {
+    private static unsupportedCommands = new CommandSupportCache()
+
+    constructor (connection: Client) {
         super()
 
         this.connection = connection
 
         this.state = {
-            power: false,
-            freeze: false,
-            shutter: false,
-            lamps: 0,
-            input: ProjectorInput.COMPUTER1
+            power: new CommandState(Commands.PowerCommand, connection, v => this.emit('state_change', 'POWER', v)),
+            freeze: new CommandState(Commands.FreezeCommand, connection, v => this.emit('state_change', 'SHUTTER', v)),
+            shutter: new CommandState(Commands.ShutterCommand, connection, v => this.emit('state_change', 'FREEZE', v)),
+            lamps: new CommandState(Commands.LampStatusCommand, connection, v => this.emit('state_change', 'LAMP', v)),
+            input: new CommandState(Commands.InputSelectCommand, connection, v => this.emit('state_change', 'INPUT', v))
         }
+
+        this.queryList.push(this.state.power)
+        this.queryList.push(this.state.freeze)
+        this.queryList.push(this.state.shutter)
+        this.queryList.push(this.state.lamps)
+        this.queryList.push(this.state.input)
 
         if (connection.connected === true) {
             this.init()
@@ -60,13 +136,21 @@ export class Projector extends EventEmitter {
     }
 
     public sendQuery (command: CommandInterface): Promise<string | undefined> {
-        return this.connection.sendCommand(command.getQueryCommand())
+        const formatted = command.getQueryCommand()
+        if (Projector.unsupportedCommands.isSupported(this.model, formatted)) {
+            const promise = this.connection.sendCommand(formatted)
+            promise.catch(err => this.onError(err, formatted))
+            return promise
+        }
+        return Promise.reject()
     }
 
     public sendValue<T> (command: GenericCommandInterface<T>, value?: T | undefined): Promise<string | undefined> {
         const formatted = command.getSetCommand(value)
-        if (formatted !== undefined) {
-            return this.connection.sendCommand(formatted)
+        if (formatted !== undefined && Projector.unsupportedCommands.isSupported(this.model, formatted)) {
+            const promise = this.connection.sendCommand(formatted)
+            promise.catch(err => this.onError(err, formatted))
+            return promise
         }
         return Promise.reject()
     }
@@ -104,13 +188,13 @@ export class Projector extends EventEmitter {
     }
 
     private init () {
-        this.connection.sendCommand('QID').then(response => {
+        this.sendQuery(Commands.ModelNameCommand).then(response => {
             if (response !== undefined) {
                 this.model = response
             }
         }, this.onError)
 
-        this.connection.sendCommand('QVX:NCGS8').then(response => {
+        this.sendQuery(Commands.ProjectorNameCommand).then(response => {
             if (response !== undefined) {
                 this.name = response
             }
@@ -125,51 +209,34 @@ export class Projector extends EventEmitter {
     }
 
     private queryState () {
-        switch (this.nextQueryOperation) {
-            case ProjectorQueryOperation.Input:
-                this.sendQuery(Commands.InputSelectCommand).then(response => {
-                    if (response !== undefined) this.setState(() => this.state.input, v => this.state.input = v || '', 'INPUT', Commands.InputSelectCommand.parseResponse(response))
-                }, this.onError)
-                this.nextQueryOperation = ProjectorQueryOperation.Power
-                break
-            case ProjectorQueryOperation.Lamps:
-                this.connection.sendCommand('QLS').then(response => {
-                    if (response !== undefined) {
-                        this.setState(() => this.state.lamps, v => this.state.lamps = v, 'LAMP', parseInt(response, 10))
-                    }
-                }, this.onError)
-                this.nextQueryOperation = ProjectorQueryOperation.Input
-                break
-            case ProjectorQueryOperation.Shutter:
-                this.sendQuery(Commands.ShutterCommand).then(response => {
-                    if (response !== undefined) this.setState(() => this.state.shutter, v => this.state.shutter = v || false, 'SHUTTER', Commands.ShutterCommand.parseResponse(response))
-                }, this.onError)
-                this.nextQueryOperation = ProjectorQueryOperation.Lamps
-                break
-            case ProjectorQueryOperation.Freeze:
-                this.sendQuery(Commands.FreezeCommand).then(response => {
-                    if (response !== undefined) this.setState(() => this.state.freeze, v => this.state.freeze = v || false, 'FREEZE', Commands.FreezeCommand.parseResponse(response))
-                }, this.onError)
-                this.nextQueryOperation = ProjectorQueryOperation.Shutter
-                break
-            case ProjectorQueryOperation.Power:
-            default:
-                this.sendQuery(Commands.PowerCommand).then(response => {
-                    if (response !== undefined) this.setState(() => this.state.power, v => this.state.power = v || false, 'POWER', Commands.PowerCommand.parseResponse(response))
-                }, this.onError)
-                this.nextQueryOperation = ProjectorQueryOperation.Freeze
-                break
+        if (this.queryList.length === 0) return
+
+        if (this.queryIndex >= this.queryList.length) {
+            this.queryIndex = 0
         }
+
+        let query: CommandStateInterface | undefined
+        while (this.queryIndex < this.queryList.length) {
+            if (this.queryList[this.queryIndex].disabled) {
+                this.queryIndex += 1
+            } else {
+                query = this.queryList[this.queryIndex]
+                break
+            }
+        }
+
+        if (query !== undefined) {
+            query.queryValue().then(EMPTY_LAMBDA, EMPTY_LAMBDA)
+        }
+
+        this.queryIndex += 1
     }
 
-    private setState<T> (getter: () => T, setter: (v: T) => void, key: string, value: T) {
-        if (getter() !== value) {
-            setter(value)
-            this.emit('state_change', key, value)
-        }
-    }
-
-    private onError (err: Error) {
+    private onError (err: Error, cmd?: string) {
         console.log(err)
+
+        if (err.message === ResponseCode.ER401 && cmd !== undefined && this.model !== undefined) {
+            Projector.unsupportedCommands.markUnsupported(this.model, cmd)
+        }
     }
 }

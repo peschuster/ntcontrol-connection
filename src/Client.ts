@@ -3,19 +3,25 @@ import { EventEmitter } from 'events'
 
 import { TcpClient } from './TcpClient'
 import { ResponseCode, getResponseDescription } from './Responses'
-import { ProtocolPrefix } from './Types'
 
 const DEFAULT_PORT: number = 1024
 const PROTOCOL_LINE_BREAK: string = '\r'
 
 const AUTO_RESOLVE_TIME: number = 200
 
+enum ProtocolPrefix {
+    SINGLE_COMMAND_ASCII = '00',
+    SINGLE_COMMAND_BINARY = '01',
+    PERSISTENT_ASCII = '20',
+    PERSISTENT_BIN = '21'
+}
+
 interface InternalPromise {
     resolve: (d?: any) => void
     reject: (err: Error) => void
 }
 
-export class NtControlConnection extends EventEmitter {
+export class Client extends EventEmitter {
 
     private host: string
 
