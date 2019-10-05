@@ -1,11 +1,4 @@
 
-export enum ProtocolPrefix {
-    SINGLE_COMMAND_ASCII = '00',
-    SINGLE_COMMAND_BINARY = '01',
-    PERSISTENT_ASCII = '20',
-    PERSISTENT_BIN = '21'
-}
-
 export enum ProjectorInput {
     COMPUTER1 = 'RG1',
     COMPUTER2 = 'RG2',
@@ -74,6 +67,11 @@ export enum ScreenSetting {
 export enum ShutterFade {
     '0.0s(OFF)' = '0.0',
     '0.5s' = '0.5',
+    '1.0s' = '1.0',
+    '1.5s' = '1.5',
+    '2.0s' = '2.0',
+    '2.5s' = '2.5',
+    '3.0s' = '3.0',
     '3.5s' = '3.5',
     '4.0s' = '4.0',
     '5.0s' = '5.0',
@@ -140,12 +138,20 @@ export enum TestPattern {
     'Cross Hatch' = '07',
     'Color Bar V' = '08',
     Lamp = '09',
+    Convergence = '11',
     Red = '22',
     Green = '23',
     Blue = '24',
     '10%-Liminance' = '25',
     '5%-Luminance' = '26',
     'Color Bar Side' = '51',
+    '16:9/4:3' = '59',
+    'Focus Red' = '70',
+    'Focus Green' = '71',
+    'Focus Blue' = '72',
+    'Focus Cyan' = '73',
+    'Focus Magenta' = '74',
+    'Focus Yellow' = '75',
     '3D-1' = '80',
     '3D-2' = '81',
     '3D-3' = '82',
@@ -182,6 +188,7 @@ export interface RgbValue {
 
 export interface CommandInterface {
     name: string
+    label: string
     getQueryCommand (): string
     parseResponse (response: string): any
     getSetCommand (value?: any | undefined): string | undefined
@@ -204,6 +211,19 @@ export interface ConverterInterface<T> {
     parse (value: string): T | undefined
     format (value: T | undefined): string | undefined
 }
+
+class StringConverter implements ConverterInterface<string> {
+
+    public parse (value: string): string | undefined {
+        return value
+    }
+
+    public format (value: string | undefined): string | undefined {
+        return value
+    }
+}
+
+export const DefaultStringConverter = new StringConverter()
 
 export class NumberConverter implements ConverterInterface<number> {
 
@@ -313,6 +333,7 @@ export const DefaultRgbConverter = new RgbConverter()
 export class GenericCommand<T> implements GenericCommandInterface<T> {
     public name: string
     public subname: string | undefined
+    public label: string
 
     private queryCommand: string
     private setCommand: string
@@ -320,8 +341,9 @@ export class GenericCommand<T> implements GenericCommandInterface<T> {
 
     private converter: ConverterInterface<T>
 
-    constructor (name: string, converter: ConverterInterface<T>, options?: CommandOptionInterface) {
+    constructor (name: string, label: string, converter: ConverterInterface<T>, options?: CommandOptionInterface) {
         this.name = name
+        this.label = label
         this.converter = converter
 
         if (options === undefined) {
@@ -354,7 +376,7 @@ export class GenericCommand<T> implements GenericCommandInterface<T> {
         return this.subname === undefined ? name : (name + ':' + this.subname)
     }
 
-    parseResponse (response: string): T | undefined {
+    public parseResponse (response: string): T | undefined {
         let value = response
 
         if (this.subname !== undefined) {
@@ -367,14 +389,14 @@ export class GenericCommand<T> implements GenericCommandInterface<T> {
         return this.converter.parse(value)
     }
 
-    getSetCommand (value?: T | undefined): string | undefined {
+    public getSetCommand (value?: T | undefined): string | undefined {
         const formatted = this.converter.format(value)
         return formatted === undefined
             ? this.setCommand
             : (this.setCommand + this.setOperator + formatted)
     }
 
-    getQueryCommand (): string {
+    public getQueryCommand (): string {
         return this.queryCommand
     }
 }

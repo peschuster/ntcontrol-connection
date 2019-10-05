@@ -1,5 +1,36 @@
 import * as Command from '../Commands'
-import { ProjectorInput, ActionSpeed, PictureMode, ColorTemperature, GenericCommandInterface, Geometry, Aspect, CustomMasking, EdgeBlending, ColorMatching, RgbValue } from '../Types'
+import { ProjectorInput, ActionSpeed, PictureMode, ColorTemperature, GenericCommandInterface, Geometry, Aspect, CustomMasking, EdgeBlending, ColorMatching, RgbValue, ScreenSetting, ShutterFade, NoSignalShutOff, LensMemory, LampControlStatus, LampStatus, TestPattern } from '../Types'
+
+test('MODEL NAME specification', () => {
+    const cmd = Command.ModelNameCommand
+
+    // Label
+    expect(cmd.label).toBe('ModelName')
+
+    // Query
+    expect(cmd.getQueryCommand()).toBe('QID')
+
+    // Set -> no setter specified
+
+    // Parse
+    expect(cmd.parseResponse('DW830E')).toBe('DW830E')
+})
+
+test('PROJCETOR NAME SETTING specification', () => {
+    const cmd = Command.ProjectorNameCommand
+
+    // Query
+    expect(cmd.getQueryCommand()).toBe('QVX:NCGS8')
+
+    // Set
+    expect(cmd.getSetCommand('PROJECTOR1')).toBe('VXX:NCGS8=PROJECTOR1')
+    expect(cmd.getSetCommand('NAME0857')).toBe('VXX:NCGS8=NAME0857')
+
+    // Parse
+    expect(cmd.parseResponse('PROJECTOR1')).toBe('PROJECTOR1')
+    expect(cmd.parseResponse('NAME0857')).toBe('NAME0857')
+    expect(cmd.parseResponse('')).toBe('')
+})
 
 test('POWER specification', () => {
     const cmd = Command.PowerCommand
@@ -661,6 +692,36 @@ test('EDGE BLENDING specification', () => {
     expect(cmd.parseResponse('EDBI0=+00002')).toBe(EdgeBlending.USER)
 })
 
+test('EDGE BLENDING-MARKER-ON/OFF specification', () => {
+    const cmd = Command.EdgeBlendingMarkerCommand
+
+    // Query
+    expect(cmd.getQueryCommand()).toBe('QGM')
+
+    // Set
+    expect(cmd.getSetCommand(false)).toBe('VGM:0')
+    expect(cmd.getSetCommand(true)).toBe('VGM:1')
+
+    // Parse
+    expect(cmd.parseResponse('0')).toBe(false)
+    expect(cmd.parseResponse('1')).toBe(true)
+})
+
+test('INPUT GUIDE specification', () => {
+    const cmd = Command.InputGuideCommand
+
+    // Query
+    expect(cmd.getQueryCommand()).toBe('QDI')
+
+    // Set
+    expect(cmd.getSetCommand(false)).toBe('OID:0')
+    expect(cmd.getSetCommand(true)).toBe('OID:1')
+
+    // Parse
+    expect(cmd.parseResponse('0')).toBe(false)
+    expect(cmd.parseResponse('1')).toBe(true)
+})
+
 test('COLOR MATCHING specification', () => {
     const cmd = Command.ColorMatchingCommand
 
@@ -855,4 +916,360 @@ test('COLOR MATCHING-7COLORS-AUTO TESTPATTERN specification', () => {
     // Parse
     expect(cmd.parseResponse('CATI1=+00000')).toBe(false)
     expect(cmd.parseResponse('CATI1=+00001')).toBe(true)
+})
+
+test('ON SCREEN specification', () => {
+    const cmd = Command.OnScreenCommand
+
+    // Query
+    expect(cmd.getQueryCommand()).toBe('QOS')
+
+    // Set
+    expect(cmd.getSetCommand(true)).toBe('OOS:1')
+    expect(cmd.getSetCommand(false)).toBe('OOS:0')
+
+    // Parse
+    expect(cmd.parseResponse('0')).toBe(false)
+    expect(cmd.parseResponse('1')).toBe(true)
+})
+
+test('SCREEN SETTING specification', () => {
+    const cmd = Command.ScreenSettingCommand
+
+    // Query
+    expect(cmd.getQueryCommand()).toBe('QSF')
+
+    // Set
+    expect(cmd.getSetCommand(ScreenSetting['16:10'])).toBe('VSF:0')
+    expect(cmd.getSetCommand(ScreenSetting['16:9'])).toBe('VSF:1')
+    expect(cmd.getSetCommand(ScreenSetting['4:3'])).toBe('VSF:2')
+
+    // Parse
+    expect(cmd.parseResponse('0')).toBe(ScreenSetting['16:10'])
+    expect(cmd.parseResponse('1')).toBe(ScreenSetting['16:9'])
+    expect(cmd.parseResponse('2')).toBe(ScreenSetting['4:3'])
+})
+
+test('SHUTTER SETTING-FADE IN specification', () => {
+    const cmd = Command.ShutterFadeInCommand
+
+    // Query
+    expect(cmd.getQueryCommand()).toBe('QVX:SEFS1')
+
+    // Set
+    expect(cmd.getSetCommand(ShutterFade['0.0s(OFF)'])).toBe('VXX:SEFS1=0.0')
+    expect(cmd.getSetCommand(ShutterFade['0.5s'])).toBe('VXX:SEFS1=0.5')
+    expect(cmd.getSetCommand(ShutterFade['1.0s'])).toBe('VXX:SEFS1=1.0')
+    expect(cmd.getSetCommand(ShutterFade['1.5s'])).toBe('VXX:SEFS1=1.5')
+    expect(cmd.getSetCommand(ShutterFade['2.0s'])).toBe('VXX:SEFS1=2.0')
+    expect(cmd.getSetCommand(ShutterFade['2.5s'])).toBe('VXX:SEFS1=2.5')
+    expect(cmd.getSetCommand(ShutterFade['3.0s'])).toBe('VXX:SEFS1=3.0')
+    expect(cmd.getSetCommand(ShutterFade['3.5s'])).toBe('VXX:SEFS1=3.5')
+    expect(cmd.getSetCommand(ShutterFade['4.0s'])).toBe('VXX:SEFS1=4.0')
+    expect(cmd.getSetCommand(ShutterFade['5.0s'])).toBe('VXX:SEFS1=5.0')
+    expect(cmd.getSetCommand(ShutterFade['7.0s'])).toBe('VXX:SEFS1=7.0')
+    expect(cmd.getSetCommand(ShutterFade['10.0s'])).toBe('VXX:SEFS1=10.0')
+
+    // Parse
+    expect(cmd.parseResponse('SEFS1=0.0')).toBe(ShutterFade['0.0s(OFF)'])
+    expect(cmd.parseResponse('SEFS1=0.5')).toBe(ShutterFade['0.5s'])
+    expect(cmd.parseResponse('SEFS1=1.0')).toBe(ShutterFade['1.0s'])
+    expect(cmd.parseResponse('SEFS1=1.5')).toBe(ShutterFade['1.5s'])
+    expect(cmd.parseResponse('SEFS1=2.0')).toBe(ShutterFade['2.0s'])
+    expect(cmd.parseResponse('SEFS1=2.5')).toBe(ShutterFade['2.5s'])
+    expect(cmd.parseResponse('SEFS1=3.0')).toBe(ShutterFade['3.0s'])
+    expect(cmd.parseResponse('SEFS1=3.5')).toBe(ShutterFade['3.5s'])
+    expect(cmd.parseResponse('SEFS1=4.0')).toBe(ShutterFade['4.0s'])
+    expect(cmd.parseResponse('SEFS1=5.0')).toBe(ShutterFade['5.0s'])
+    expect(cmd.parseResponse('SEFS1=7.0')).toBe(ShutterFade['7.0s'])
+    expect(cmd.parseResponse('SEFS1=10.0')).toBe(ShutterFade['10.0s'])
+})
+
+test('SHUTTER SETTING-FADE OUT specification', () => {
+    const cmd = Command.ShutterFadeOutCommand
+
+    // Query
+    expect(cmd.getQueryCommand()).toBe('QVX:SEFS2')
+
+    // Set
+    expect(cmd.getSetCommand(ShutterFade['0.0s(OFF)'])).toBe('VXX:SEFS2=0.0')
+    expect(cmd.getSetCommand(ShutterFade['0.5s'])).toBe('VXX:SEFS2=0.5')
+    expect(cmd.getSetCommand(ShutterFade['1.0s'])).toBe('VXX:SEFS2=1.0')
+    expect(cmd.getSetCommand(ShutterFade['1.5s'])).toBe('VXX:SEFS2=1.5')
+    expect(cmd.getSetCommand(ShutterFade['2.0s'])).toBe('VXX:SEFS2=2.0')
+    expect(cmd.getSetCommand(ShutterFade['2.5s'])).toBe('VXX:SEFS2=2.5')
+    expect(cmd.getSetCommand(ShutterFade['3.0s'])).toBe('VXX:SEFS2=3.0')
+    expect(cmd.getSetCommand(ShutterFade['3.5s'])).toBe('VXX:SEFS2=3.5')
+    expect(cmd.getSetCommand(ShutterFade['4.0s'])).toBe('VXX:SEFS2=4.0')
+    expect(cmd.getSetCommand(ShutterFade['5.0s'])).toBe('VXX:SEFS2=5.0')
+    expect(cmd.getSetCommand(ShutterFade['7.0s'])).toBe('VXX:SEFS2=7.0')
+    expect(cmd.getSetCommand(ShutterFade['10.0s'])).toBe('VXX:SEFS2=10.0')
+
+    // Parse
+    expect(cmd.parseResponse('SEFS2=0.0')).toBe(ShutterFade['0.0s(OFF)'])
+    expect(cmd.parseResponse('SEFS2=0.5')).toBe(ShutterFade['0.5s'])
+    expect(cmd.parseResponse('SEFS2=1.0')).toBe(ShutterFade['1.0s'])
+    expect(cmd.parseResponse('SEFS2=1.5')).toBe(ShutterFade['1.5s'])
+    expect(cmd.parseResponse('SEFS2=2.0')).toBe(ShutterFade['2.0s'])
+    expect(cmd.parseResponse('SEFS2=2.5')).toBe(ShutterFade['2.5s'])
+    expect(cmd.parseResponse('SEFS2=3.0')).toBe(ShutterFade['3.0s'])
+    expect(cmd.parseResponse('SEFS2=3.5')).toBe(ShutterFade['3.5s'])
+    expect(cmd.parseResponse('SEFS2=4.0')).toBe(ShutterFade['4.0s'])
+    expect(cmd.parseResponse('SEFS2=5.0')).toBe(ShutterFade['5.0s'])
+    expect(cmd.parseResponse('SEFS2=7.0')).toBe(ShutterFade['7.0s'])
+    expect(cmd.parseResponse('SEFS2=10.0')).toBe(ShutterFade['10.0s'])
+})
+
+test('PROJECTOR ID specification', () => {
+    const cmd = Command.ProjectorIdCommand
+
+    // Query -> no query command
+
+    // Set
+    expect(cmd.getSetCommand(0)).toBe('RIS:00')
+    expect(cmd.getSetCommand(20)).toBe('RIS:20')
+    expect(cmd.getSetCommand(64)).toBe('RIS:64')
+
+    // Parse -> no responses
+})
+
+test('ID ALL specification', () => {
+    const cmd = Command.IdAllCommand
+
+    // Query
+    expect(cmd.getQueryCommand()).toBe('QVY')
+
+    // Set
+    expect(cmd.getSetCommand(true)).toBe('RVS:1')
+    expect(cmd.getSetCommand(false)).toBe('RVS:0')
+
+    // Parse
+    expect(cmd.parseResponse('0')).toBe(false)
+    expect(cmd.parseResponse('1')).toBe(true)
+})
+
+test('NO SIGNAL SHUT-OFF specification', () => {
+    const cmd = Command.NoSignalShutOffCommand
+
+    // Query
+    expect(cmd.getQueryCommand()).toBe('QAF')
+
+    // Set
+    expect(cmd.getSetCommand(NoSignalShutOff.DISABLE)).toBe('OAF:00')
+    expect(cmd.getSetCommand(NoSignalShutOff['10min'])).toBe('OAF:10')
+    expect(cmd.getSetCommand(NoSignalShutOff['20min'])).toBe('OAF:20')
+    expect(cmd.getSetCommand(NoSignalShutOff['30min'])).toBe('OAF:30')
+    expect(cmd.getSetCommand(NoSignalShutOff['40min'])).toBe('OAF:40')
+    expect(cmd.getSetCommand(NoSignalShutOff['50min'])).toBe('OAF:50')
+    expect(cmd.getSetCommand(NoSignalShutOff['60min'])).toBe('OAF:60')
+    expect(cmd.getSetCommand(NoSignalShutOff['70min'])).toBe('OAF:70')
+    expect(cmd.getSetCommand(NoSignalShutOff['80min'])).toBe('OAF:80')
+    expect(cmd.getSetCommand(NoSignalShutOff['90min'])).toBe('OAF:90')
+
+    // Parse
+    expect(cmd.parseResponse('00')).toBe(NoSignalShutOff.DISABLE)
+    expect(cmd.parseResponse('10')).toBe(NoSignalShutOff['10min'])
+    expect(cmd.parseResponse('20')).toBe(NoSignalShutOff['20min'])
+    expect(cmd.parseResponse('30')).toBe(NoSignalShutOff['30min'])
+    expect(cmd.parseResponse('40')).toBe(NoSignalShutOff['40min'])
+    expect(cmd.parseResponse('50')).toBe(NoSignalShutOff['50min'])
+    expect(cmd.parseResponse('60')).toBe(NoSignalShutOff['60min'])
+    expect(cmd.parseResponse('70')).toBe(NoSignalShutOff['70min'])
+    expect(cmd.parseResponse('80')).toBe(NoSignalShutOff['80min'])
+    expect(cmd.parseResponse('90')).toBe(NoSignalShutOff['90min'])
+})
+
+test('LENS MEMORY-LOAD specification', () => {
+    const cmd = Command.LensMemoryLoadCommand
+
+    // Query -> no query
+
+    // Set
+    expect(cmd.getSetCommand(LensMemory['LENS MEMORY1'])).toBe('VXX:LNMI1=+00000')
+    expect(cmd.getSetCommand(LensMemory['LENS MEMORY2'])).toBe('VXX:LNMI1=+00001')
+    expect(cmd.getSetCommand(LensMemory['LENS MEMORY3'])).toBe('VXX:LNMI1=+00002')
+    expect(cmd.getSetCommand(LensMemory['LENS MEMORY4'])).toBe('VXX:LNMI1=+00003')
+    expect(cmd.getSetCommand(LensMemory['LENS MEMORY5'])).toBe('VXX:LNMI1=+00004')
+    expect(cmd.getSetCommand(LensMemory['LENS MEMORY6'])).toBe('VXX:LNMI1=+00005')
+    expect(cmd.getSetCommand(LensMemory['LENS MEMORY7'])).toBe('VXX:LNMI1=+00006')
+    expect(cmd.getSetCommand(LensMemory['LENS MEMORY8'])).toBe('VXX:LNMI1=+00007')
+    expect(cmd.getSetCommand(LensMemory['LENS MEMORY9'])).toBe('VXX:LNMI1=+00008')
+    expect(cmd.getSetCommand(LensMemory['LENS MEMORY10'])).toBe('VXX:LNMI1=+00009')
+
+    // Parse
+    expect(cmd.parseResponse('LNMI1=+00000')).toBe(LensMemory['LENS MEMORY1'])
+    expect(cmd.parseResponse('LNMI1=+00001')).toBe(LensMemory['LENS MEMORY2'])
+    expect(cmd.parseResponse('LNMI1=+00002')).toBe(LensMemory['LENS MEMORY3'])
+    expect(cmd.parseResponse('LNMI1=+00003')).toBe(LensMemory['LENS MEMORY4'])
+    expect(cmd.parseResponse('LNMI1=+00004')).toBe(LensMemory['LENS MEMORY5'])
+    expect(cmd.parseResponse('LNMI1=+00005')).toBe(LensMemory['LENS MEMORY6'])
+    expect(cmd.parseResponse('LNMI1=+00006')).toBe(LensMemory['LENS MEMORY7'])
+    expect(cmd.parseResponse('LNMI1=+00007')).toBe(LensMemory['LENS MEMORY8'])
+    expect(cmd.parseResponse('LNMI1=+00008')).toBe(LensMemory['LENS MEMORY9'])
+    expect(cmd.parseResponse('LNMI1=+00009')).toBe(LensMemory['LENS MEMORY10'])
+})
+
+test('LENS MEMORY-SAVE specification', () => {
+    const cmd = Command.LensMemorySaveCommand
+
+    // Query -> no query
+
+    // Set
+    expect(cmd.getSetCommand(LensMemory['LENS MEMORY1'])).toBe('VXX:LNMI2=+00000')
+    expect(cmd.getSetCommand(LensMemory['LENS MEMORY2'])).toBe('VXX:LNMI2=+00001')
+    expect(cmd.getSetCommand(LensMemory['LENS MEMORY3'])).toBe('VXX:LNMI2=+00002')
+    expect(cmd.getSetCommand(LensMemory['LENS MEMORY4'])).toBe('VXX:LNMI2=+00003')
+    expect(cmd.getSetCommand(LensMemory['LENS MEMORY5'])).toBe('VXX:LNMI2=+00004')
+    expect(cmd.getSetCommand(LensMemory['LENS MEMORY6'])).toBe('VXX:LNMI2=+00005')
+    expect(cmd.getSetCommand(LensMemory['LENS MEMORY7'])).toBe('VXX:LNMI2=+00006')
+    expect(cmd.getSetCommand(LensMemory['LENS MEMORY8'])).toBe('VXX:LNMI2=+00007')
+    expect(cmd.getSetCommand(LensMemory['LENS MEMORY9'])).toBe('VXX:LNMI2=+00008')
+    expect(cmd.getSetCommand(LensMemory['LENS MEMORY10'])).toBe('VXX:LNMI2=+00009')
+
+    // Parse
+    expect(cmd.parseResponse('LNMI2=+00000')).toBe(LensMemory['LENS MEMORY1'])
+    expect(cmd.parseResponse('LNMI2=+00001')).toBe(LensMemory['LENS MEMORY2'])
+    expect(cmd.parseResponse('LNMI2=+00002')).toBe(LensMemory['LENS MEMORY3'])
+    expect(cmd.parseResponse('LNMI2=+00003')).toBe(LensMemory['LENS MEMORY4'])
+    expect(cmd.parseResponse('LNMI2=+00004')).toBe(LensMemory['LENS MEMORY5'])
+    expect(cmd.parseResponse('LNMI2=+00005')).toBe(LensMemory['LENS MEMORY6'])
+    expect(cmd.parseResponse('LNMI2=+00006')).toBe(LensMemory['LENS MEMORY7'])
+    expect(cmd.parseResponse('LNMI2=+00007')).toBe(LensMemory['LENS MEMORY8'])
+    expect(cmd.parseResponse('LNMI2=+00008')).toBe(LensMemory['LENS MEMORY9'])
+    expect(cmd.parseResponse('LNMI2=+00009')).toBe(LensMemory['LENS MEMORY10'])
+})
+
+test('LENS MEMORY-DELETE specification', () => {
+    const cmd = Command.LensMemoryDeleteCommand
+
+    // Query -> no query
+
+    // Set
+    expect(cmd.getSetCommand(LensMemory['LENS MEMORY1'])).toBe('VXX:LNMI3=+00000')
+    expect(cmd.getSetCommand(LensMemory['LENS MEMORY2'])).toBe('VXX:LNMI3=+00001')
+    expect(cmd.getSetCommand(LensMemory['LENS MEMORY3'])).toBe('VXX:LNMI3=+00002')
+    expect(cmd.getSetCommand(LensMemory['LENS MEMORY4'])).toBe('VXX:LNMI3=+00003')
+    expect(cmd.getSetCommand(LensMemory['LENS MEMORY5'])).toBe('VXX:LNMI3=+00004')
+    expect(cmd.getSetCommand(LensMemory['LENS MEMORY6'])).toBe('VXX:LNMI3=+00005')
+    expect(cmd.getSetCommand(LensMemory['LENS MEMORY7'])).toBe('VXX:LNMI3=+00006')
+    expect(cmd.getSetCommand(LensMemory['LENS MEMORY8'])).toBe('VXX:LNMI3=+00007')
+    expect(cmd.getSetCommand(LensMemory['LENS MEMORY9'])).toBe('VXX:LNMI3=+00008')
+    expect(cmd.getSetCommand(LensMemory['LENS MEMORY10'])).toBe('VXX:LNMI3=+00009')
+
+    // Parse
+    expect(cmd.parseResponse('LNMI3=+00000')).toBe(LensMemory['LENS MEMORY1'])
+    expect(cmd.parseResponse('LNMI3=+00001')).toBe(LensMemory['LENS MEMORY2'])
+    expect(cmd.parseResponse('LNMI3=+00002')).toBe(LensMemory['LENS MEMORY3'])
+    expect(cmd.parseResponse('LNMI3=+00003')).toBe(LensMemory['LENS MEMORY4'])
+    expect(cmd.parseResponse('LNMI3=+00004')).toBe(LensMemory['LENS MEMORY5'])
+    expect(cmd.parseResponse('LNMI3=+00005')).toBe(LensMemory['LENS MEMORY6'])
+    expect(cmd.parseResponse('LNMI3=+00006')).toBe(LensMemory['LENS MEMORY7'])
+    expect(cmd.parseResponse('LNMI3=+00007')).toBe(LensMemory['LENS MEMORY8'])
+    expect(cmd.parseResponse('LNMI3=+00008')).toBe(LensMemory['LENS MEMORY9'])
+    expect(cmd.parseResponse('LNMI3=+00009')).toBe(LensMemory['LENS MEMORY10'])
+})
+
+test('LAMP CONTROL STATUS specification', () => {
+    const cmd = Command.LampControlStatusCommand
+
+    // Query
+    expect(cmd.getQueryCommand()).toBe('Q$S')
+
+    // Set -> no set
+
+    // Parse
+    expect(cmd.parseResponse('0')).toBe(LampControlStatus['LAMP OFF'])
+    expect(cmd.parseResponse('1')).toBe(LampControlStatus['In turning ON'])
+    expect(cmd.parseResponse('2')).toBe(LampControlStatus['LAMP ON'])
+    expect(cmd.parseResponse('3')).toBe(LampControlStatus['LAMP Cooling'])
+})
+
+test('LAMP STATUS specification', () => {
+    const cmd = Command.LampStatusCommand
+
+    // Query
+    expect(cmd.getQueryCommand()).toBe('QLS')
+
+    // Set -> no set
+
+    // Parse
+    expect(cmd.parseResponse('0')).toBe(LampStatus['ALL OFF'])
+    expect(cmd.parseResponse('1')).toBe(LampStatus['ALL ON'])
+    expect(cmd.parseResponse('2')).toBe(LampStatus['1:ON, 4:ON'])
+    expect(cmd.parseResponse('3')).toBe(LampStatus['2:ON, 3:ON'])
+    expect(cmd.parseResponse('4')).toBe(LampStatus['1:ON, 2:ON, 3:ON'])
+    expect(cmd.parseResponse('5')).toBe(LampStatus['1:ON, 2:ON, 4:ON'])
+    expect(cmd.parseResponse('6')).toBe(LampStatus['1:ON, 3:ON, 4:ON'])
+    expect(cmd.parseResponse('7')).toBe(LampStatus['2:ON, 3:ON, 4:ON'])
+    expect(cmd.parseResponse('8')).toBe(LampStatus['1:ON'])
+    expect(cmd.parseResponse('9')).toBe(LampStatus['2:ON'])
+    expect(cmd.parseResponse('10')).toBe(LampStatus['3:ON'])
+    expect(cmd.parseResponse('11')).toBe(LampStatus['4:ON'])
+})
+
+test('TEST PATTERN specification', () => {
+    const cmd = Command.TestPatternCommand
+
+    // Query
+    expect(cmd.getQueryCommand()).toBe('QTS')
+
+    // Set
+    expect(cmd.getSetCommand(TestPattern.Off)).toBe('OTS:00')
+    expect(cmd.getSetCommand(TestPattern.White)).toBe('OTS:01')
+    expect(cmd.getSetCommand(TestPattern.Black)).toBe('OTS:02')
+    expect(cmd.getSetCommand(TestPattern.Flag)).toBe('OTS:03')
+    expect(cmd.getSetCommand(TestPattern['Reversed Flag'])).toBe('OTS:04')
+    expect(cmd.getSetCommand(TestPattern.Window)).toBe('OTS:05')
+    expect(cmd.getSetCommand(TestPattern['Reversed Window'])).toBe('OTS:06')
+    expect(cmd.getSetCommand(TestPattern['Cross Hatch'])).toBe('OTS:07')
+    expect(cmd.getSetCommand(TestPattern['Color Bar V'])).toBe('OTS:08')
+    expect(cmd.getSetCommand(TestPattern.Lamp)).toBe('OTS:09')
+    expect(cmd.getSetCommand(TestPattern.Convergence)).toBe('OTS:11')
+    expect(cmd.getSetCommand(TestPattern.Red)).toBe('OTS:22')
+    expect(cmd.getSetCommand(TestPattern.Green)).toBe('OTS:23')
+    expect(cmd.getSetCommand(TestPattern.Blue)).toBe('OTS:24')
+    expect(cmd.getSetCommand(TestPattern['10%-Liminance'])).toBe('OTS:25')
+    expect(cmd.getSetCommand(TestPattern['5%-Luminance'])).toBe('OTS:26')
+    expect(cmd.getSetCommand(TestPattern['Color Bar Side'])).toBe('OTS:51')
+    expect(cmd.getSetCommand(TestPattern['16:9/4:3'])).toBe('OTS:59')
+    expect(cmd.getSetCommand(TestPattern['Focus Red'])).toBe('OTS:70')
+    expect(cmd.getSetCommand(TestPattern['Focus Green'])).toBe('OTS:71')
+    expect(cmd.getSetCommand(TestPattern['Focus Blue'])).toBe('OTS:72')
+    expect(cmd.getSetCommand(TestPattern['Focus Cyan'])).toBe('OTS:73')
+    expect(cmd.getSetCommand(TestPattern['Focus Magenta'])).toBe('OTS:74')
+    expect(cmd.getSetCommand(TestPattern['Focus Yellow'])).toBe('OTS:75')
+    expect(cmd.getSetCommand(TestPattern['3D-1'])).toBe('OTS:80')
+    expect(cmd.getSetCommand(TestPattern['3D-2'])).toBe('OTS:81')
+    expect(cmd.getSetCommand(TestPattern['3D-3'])).toBe('OTS:82')
+    expect(cmd.getSetCommand(TestPattern['3D-4'])).toBe('OTS:83')
+
+    // Parse
+    expect(cmd.parseResponse('00')).toBe(TestPattern.Off)
+    expect(cmd.parseResponse('01')).toBe(TestPattern.White)
+    expect(cmd.parseResponse('02')).toBe(TestPattern.Black)
+    expect(cmd.parseResponse('03')).toBe(TestPattern.Flag)
+    expect(cmd.parseResponse('04')).toBe(TestPattern['Reversed Flag'])
+    expect(cmd.parseResponse('05')).toBe(TestPattern.Window)
+    expect(cmd.parseResponse('06')).toBe(TestPattern['Reversed Window'])
+    expect(cmd.parseResponse('07')).toBe(TestPattern['Cross Hatch'])
+    expect(cmd.parseResponse('08')).toBe(TestPattern['Color Bar V'])
+    expect(cmd.parseResponse('09')).toBe(TestPattern.Lamp)
+    expect(cmd.parseResponse('11')).toBe(TestPattern.Convergence)
+    expect(cmd.parseResponse('22')).toBe(TestPattern.Red)
+    expect(cmd.parseResponse('23')).toBe(TestPattern.Green)
+    expect(cmd.parseResponse('24')).toBe(TestPattern.Blue)
+    expect(cmd.parseResponse('25')).toBe(TestPattern['10%-Liminance'])
+    expect(cmd.parseResponse('26')).toBe(TestPattern['5%-Luminance'])
+    expect(cmd.parseResponse('51')).toBe(TestPattern['Color Bar Side'])
+    expect(cmd.parseResponse('59')).toBe(TestPattern['16:9/4:3'])
+    expect(cmd.parseResponse('70')).toBe(TestPattern['Focus Red'])
+    expect(cmd.parseResponse('71')).toBe(TestPattern['Focus Green'])
+    expect(cmd.parseResponse('72')).toBe(TestPattern['Focus Blue'])
+    expect(cmd.parseResponse('73')).toBe(TestPattern['Focus Cyan'])
+    expect(cmd.parseResponse('74')).toBe(TestPattern['Focus Magenta'])
+    expect(cmd.parseResponse('75')).toBe(TestPattern['Focus Yellow'])
+    expect(cmd.parseResponse('80')).toBe(TestPattern['3D-1'])
+    expect(cmd.parseResponse('81')).toBe(TestPattern['3D-2'])
+    expect(cmd.parseResponse('82')).toBe(TestPattern['3D-3'])
+    expect(cmd.parseResponse('83')).toBe(TestPattern['3D-4'])
 })
