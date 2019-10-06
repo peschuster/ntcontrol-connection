@@ -1,4 +1,4 @@
-import { ProjectorInput, PictureMode, Geometry, Aspect, ColorMatching, ScreenSetting, ShutterFade, NoSignalShutOff, LensMemory, LampControlStatus, LampStatus, TestPattern, ActionSpeed, ColorTemperature, EdgeBlending, CustomMasking, GenericCommand, BooleanConverter, EnumConverter, DefaultBooleanConverter, DefaultRgbConverter, NumberConverter, DefaultStringConverter } from './Types'
+import { ProjectorInput, PictureMode, Geometry, Aspect, ColorMatching, ScreenSetting, ShutterFade, NoSignalShutOff, LensMemory, LampControlStatus, LampStatus, TestPattern, ActionSpeed, ColorTemperature, EdgeBlending, CustomMasking, GenericCommand, BooleanConverter, EnumConverter, DefaultBooleanConverter, DefaultRgbConverter, NumberConverter, DefaultStringConverter, BinaryCommand, DefaultGridSettingConverter } from './Types'
 
 // GENERAL COMMANDS
 export const ModelNameCommand = new GenericCommand('ID', 'ModelName', DefaultStringConverter)
@@ -95,3 +95,8 @@ export const LampStatusCommand = new GenericCommand('LS', 'LampStatus', new Enum
 
 // TEST PATTERN
 export const TestPatternCommand = new GenericCommand('TS', 'TestPattern', new EnumConverter<TestPattern>(), { setPrefix: 'O' })
+
+export const BrightnessControlCommand = new GenericCommand('XX', 'BrightnessControl', new NumberConverter(20, 5, 20 ,true), { subname: 'TGAI0' })
+
+// Binary Commands
+export const GridSettingsCommand = new BinaryCommand('AB07', 'GridSettings', DefaultGridSettingConverter)

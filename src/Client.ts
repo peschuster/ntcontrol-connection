@@ -3,6 +3,7 @@ import { EventEmitter } from 'events'
 
 import { TcpClient } from './TcpClient'
 import { ResponseCode, getResponseDescription } from './Responses'
+import { CommandType } from './Types'
 
 const DEFAULT_PORT: number = 1024
 const PROTOCOL_LINE_BREAK: string = '\r'
@@ -167,14 +168,15 @@ export class Client extends EventEmitter {
         }
     }
 
-    public sendCommand (cmd: string): Promise<string | undefined> {
+    public sendCommand (cmd: string, type: CommandType = CommandType.Binary): Promise<string | undefined> {
         if (this.socket !== undefined) {
             return new Promise((resolve, reject) => {
                 const promiseRef = { resolve, reject }
                 this.cmdStack.push(promiseRef)
 
                 if (this.socket !== undefined) {
-                    this.socket.send(this.token + ProtocolPrefix.PERSISTENT_ASCII + 'ADZZ;' + cmd + PROTOCOL_LINE_BREAK)
+                    const prefix = (type === CommandType.Binary) ? ProtocolPrefix.PERSISTENT_BIN : ProtocolPrefix.PERSISTENT_ASCII
+                    this.socket.send(this.token + prefix + 'ADZZ;' + cmd + PROTOCOL_LINE_BREAK)
                 }
 
                 // Automatically resolve promise, if no response is received (not all cmds generate a response, but all might end with an error)

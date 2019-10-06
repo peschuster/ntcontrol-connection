@@ -63,7 +63,13 @@ class CommandState<T> implements CommandStateInterface {
 
     public queryValue (): Promise<T> {
         return new Promise((resolve, reject) => {
-            this.connection.sendCommand(this.cmd.getQueryCommand())
+            const cmd = this.cmd.getQueryCommand()
+            if (cmd === undefined) {
+                reject()
+                return
+            }
+
+            this.connection.sendCommand(cmd, this.cmd.type)
                 .then(response => {
                     const value = this.cmd.parseResponse(response || '')
                     if (this.value !== value) {
@@ -137,8 +143,8 @@ export class Projector extends EventEmitter {
 
     public sendQuery (command: CommandInterface): Promise<string | undefined> {
         const formatted = command.getQueryCommand()
-        if (Projector.unsupportedCommands.isSupported(this.model, formatted)) {
-            const promise = this.connection.sendCommand(formatted)
+        if (formatted !== undefined && Projector.unsupportedCommands.isSupported(this.model, formatted)) {
+            const promise = this.connection.sendCommand(formatted, command.type)
             promise.catch(err => this.onError(err, formatted))
             return promise
         }
@@ -148,7 +154,7 @@ export class Projector extends EventEmitter {
     public sendValue<T> (command: GenericCommandInterface<T>, value?: T | undefined): Promise<string | undefined> {
         const formatted = command.getSetCommand(value)
         if (formatted !== undefined && Projector.unsupportedCommands.isSupported(this.model, formatted)) {
-            const promise = this.connection.sendCommand(formatted)
+            const promise = this.connection.sendCommand(formatted, command.type)
             promise.catch(err => this.onError(err, formatted))
             return promise
         }

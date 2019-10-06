@@ -131,27 +131,30 @@ export enum TestPattern {
     Off = '00',
     White = '01',
     Black = '02',
-    Flag = '03',
-    'Reversed Flag' = '04',
-    Window = '05',
-    'Reversed Window' = '06',
-    'Cross Hatch' = '07',
-    'Color Bar V' = '08',
-    Lamp = '09',
-    Convergence = '11',
     Red = '22',
     Green = '23',
     Blue = '24',
+    Cyan = '28',
+    Magenta = '29',
+    Yellow = '30',
+    Window = '05',
+    'Window (Inversion)' = '06',
+    'Colorbars (Vertical)' = '08',
+    'Colorbars (Horizontal)' = '51',
+    '16:9 / 4:3' = '59',
+    'Crosshatch (White)' = '07',
+    'Crosshatch (Red)' = '70',
+    'Crosshatch (Green)' = '71',
+    'Crosshatch (Blue)' = '72',
+    'Crosshatch (Cyan)' = '73',
+    'Crosshatch (Magenta)' = '74',
+    'Crosshatch (Yellow)' = '75',
+    Flag = '03',
+    'Flag (Inversion)' = '04',
+    Lamp = '09',
+    Convergence = '11',
     '10%-Liminance' = '25',
     '5%-Luminance' = '26',
-    'Color Bar Side' = '51',
-    '16:9/4:3' = '59',
-    'Focus Red' = '70',
-    'Focus Green' = '71',
-    'Focus Blue' = '72',
-    'Focus Cyan' = '73',
-    'Focus Magenta' = '74',
-    'Focus Yellow' = '75',
     '3D-1' = '80',
     '3D-2' = '81',
     '3D-3' = '82',
@@ -180,6 +183,11 @@ export enum EdgeBlending {
     USER = '+00002'
 }
 
+export enum CommandType {
+    Ascii = 0,
+    Binary = 1
+}
+
 export interface RgbValue {
     R: number
     G: number
@@ -189,7 +197,8 @@ export interface RgbValue {
 export interface CommandInterface {
     name: string
     label: string
-    getQueryCommand (): string
+    type: CommandType
+    getQueryCommand (): string | undefined
     parseResponse (response: string): any
     getSetCommand (value?: any | undefined): string | undefined
 }
@@ -334,6 +343,7 @@ export class GenericCommand<T> implements GenericCommandInterface<T> {
     public name: string
     public subname: string | undefined
     public label: string
+    public type: CommandType = CommandType.Ascii
 
     private queryCommand: string
     private setCommand: string
@@ -398,5 +408,91 @@ export class GenericCommand<T> implements GenericCommandInterface<T> {
 
     public getQueryCommand (): string {
         return this.queryCommand
+    }
+}
+
+export enum DisplayGridLines {
+    OFF = 'FFFFFF',
+    White = 'FFFFFF',
+    Black = '000000',
+    Red = 'FF0000',
+    Green = '00FF00',
+    Blue = '0000FF',
+    Cyan = '00FFFF',
+    Magenta = 'FF00FF',
+    Yellow = 'FFFF00'
+}
+
+export interface GridSettings {
+    mode: DisplayGridLines
+    verticalLines: number
+    horizontalLines: number
+}
+
+class GridSettingsConverter implements ConverterInterface<GridSettings> {
+    parse (value: string): GridSettings | undefined {
+        if (!/^[0-9A-F]{12}$/.test(value)) return undefined
+
+        const enabled = value.substring(0, 2) === '01'
+        const color = value.substring(6, 12)
+
+        const result = {
+            mode: enabled ? (color as DisplayGridLines) : DisplayGridLines.OFF,
+            verticalLines: parseInt(value.substring(2, 4), 16),
+            horizontalLines: parseInt(value.substring(4, 6), 16)
+        }
+
+        return result
+    }
+
+    format (value: GridSettings | undefined): string | undefined {
+        if (value === undefined || value.horizontalLines > 255 || value.verticalLines > 255) {
+            return undefined
+        }
+
+        return (value.mode === DisplayGridLines.OFF ? '00' : '01')
+            + value.verticalLines.toString(16).toUpperCase().padStart(2, '0')
+            + value.horizontalLines.toString(16).toUpperCase().padStart(2, '0')
+            + value.mode
+    }
+}
+
+export const DefaultGridSettingConverter = new GridSettingsConverter()
+
+export class BinaryCommand<T> implements GenericCommandInterface<T> {
+    public name: string
+    public label: string
+    public type: CommandType = CommandType.Binary
+
+    private converter: ConverterInterface<T>
+
+    constructor (name: string, label: string, converter: ConverterInterface<T>) {
+        this.name = name
+        this.label = label
+        this.converter = converter
+    }
+
+    public parseResponse (response: string): T | undefined {
+        let value = undefined
+        if (response.substring(0, 2) === '02'
+            && response.substring(response.length - 2) === '03'
+            && response.substring(4, 4 + this.name.length) === this.name) {
+            value = response.substring(4 + this.name.length, response.length - 2)
+        } else {
+            return undefined
+        }
+
+        return this.converter.parse(value)
+    }
+
+    public getSetCommand (value?: T | undefined): string | undefined {
+        const formatted = this.converter.format(value)
+        if (formatted === undefined) return undefined
+
+        return '0200' + this.name + formatted + '03'
+    }
+
+    public getQueryCommand (): string | undefined {
+        return undefined
     }
 }
