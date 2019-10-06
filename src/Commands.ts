@@ -100,3 +100,4 @@ export const BrightnessControlCommand = new GenericCommand('XX', 'BrightnessCont
 
 // Binary Commands
 export const GridSettingsCommand = new BinaryCommand('AB07', 'GridSettings', DefaultGridSettingConverter)
+export const StatusDisplayCommand = new BinaryCommand('D0F', 'StatusDisplay', new BooleanConverter('301', '000'))

@@ -27,3 +27,19 @@ test('GRID SETTINGS specification', () => {
     expect(cmd.parseResponse('0200AB0701030500G0FF03')).toBe(undefined)
     expect(cmd.parseResponse('0200AB070103050000FF05')).toBe(undefined)
 })
+
+test('STATUS DISPLAY specification', () => {
+    const cmd = Command.StatusDisplayCommand
+    expect(cmd.type).toBe(CommandType.Binary)
+
+    // Query
+    expect(cmd.getQueryCommand()).toBe(undefined)
+
+    // Set
+    expect(cmd.getSetCommand(true)).toBe('0200D0F30103')
+    expect(cmd.getSetCommand(false)).toBe('0200D0F00003')
+
+    // Parse
+    expect(cmd.parseResponse('0201D0F00003')).toBe(false)
+    expect(cmd.parseResponse('0204D0F30103')).toBe(true)
+})
