@@ -20,4 +20,10 @@ test('GRID SETTINGS specification', () => {
         .toStrictEqual({ mode: DisplayGridLines.OFF, verticalLines: 11, horizontalLines: 11 })
     expect(cmd.parseResponse('0200AB070103050000FF03'))
         .toStrictEqual({ mode: DisplayGridLines.Blue, verticalLines: 3, horizontalLines: 5 })
+
+    // Unknown formats
+    value = { mode: DisplayGridLines.Red, verticalLines: 500, horizontalLines: 3 }
+    expect(cmd.getSetCommand(value)).toBe(undefined)
+    expect(cmd.parseResponse('0200AB0701030500G0FF03')).toBe(undefined)
+    expect(cmd.parseResponse('0200AB070103050000FF05')).toBe(undefined)
 })
