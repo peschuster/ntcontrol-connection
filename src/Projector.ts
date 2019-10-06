@@ -176,17 +176,10 @@ export class Projector extends EventEmitter {
     }
 
     public setShutter (shutter?: boolean | undefined) {
-        if (shutter !== undefined) {
-            this.sendValue(Commands.ShutterCommand, shutter).then(EMPTY_LAMBDA, this.onError)
-        } else {
-            // toggle
-            this.sendValue(Commands.ShutterCommand).then(EMPTY_LAMBDA, err => {
-                if (err.message === 'ERR1') {
-                    // toggle not supported => try 'manually'
-                    this.setShutter(!this.state.shutter)
-                }
-            })
+        if (shutter === undefined) {
+            shutter = !this.state.shutter
         }
+        this.sendValue(Commands.ShutterCommand, shutter).then(EMPTY_LAMBDA, this.onError)
     }
 
     public setInput (input: ProjectorInput) {
