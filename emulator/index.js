@@ -118,7 +118,11 @@ const server = net.createServer(socket => {
         if (index >= 0) {
             clients.splice(index, 1);
         }
-    });
+    })
+    
+    socket.on("error", (err) => {
+      console.log(err.stack)
+    })
 })
 
 server.listen(DEFAULT_PORT, '127.0.0.1')
