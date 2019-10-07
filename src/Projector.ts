@@ -120,7 +120,6 @@ export class Projector extends EventEmitter {
         this.addMonitoring(Commands.PowerCommand)
         this.addMonitoring(Commands.FreezeCommand)
         this.addMonitoring(Commands.ShutterCommand)
-        // this.addMonitoring(Commands.LampStatusCommand)
         this.addMonitoring(Commands.InputSelectCommand)
         this.addMonitoring(Commands.LampControlStatusCommand)
     }
@@ -288,9 +287,9 @@ export class Projector extends EventEmitter {
 
     private onError (err: Error, cmd?: string) {
         if (cmd !== undefined) {
-            this.log('error', 'Command "' + cmd + '" resulted in error: ' + err)
+            this.log('error', 'Command "' + cmd + '" resulted in error: ' + (err.message || err))
         } else {
-            this.log('error', 'Error: ' + err)
+            this.log('error', 'Error: ' + (err.message || err))
         }
     }
 }
