@@ -1,8 +1,10 @@
 
-export enum LogLevel {
-    Info,
-    Warning,
-    Error
-}
+export function enumValueToLabel (list: any, value: string): string | undefined {
+    for (const label in list) {
+        if (list[label] === value) {
+            return label
+        }
+    }
 
-export declare function log (level: LogLevel, message: string): void
+    return undefined
+}

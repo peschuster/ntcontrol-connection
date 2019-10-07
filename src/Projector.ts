@@ -1,53 +1,25 @@
 import { EventEmitter } from 'events'
 import { Client } from './Client'
 
-import { ProjectorInput, CommandInterface, GenericCommandInterface, LampStatus } from './Types'
+import { ProjectorInput, CommandInterface, GenericCommandInterface } from './Types'
 
 import * as Commands from './Commands'
 import { ResponseCode } from './Responses'
 
 const EMPTY_LAMBDA = () => { /* nop */ }
 
-interface ProjectorState {
-    power: CommandState<boolean>
-    freeze: CommandState<boolean>
-    shutter: CommandState<boolean>
-    lamps: CommandState<LampStatus>
-    input: CommandState<ProjectorInput>
-}
-
-interface UnsupportedCommandListInterface {
-    [model: string]: string[] | undefined
-}
-
-class CommandSupportCache {
-    private cache: UnsupportedCommandListInterface = {}
-
-    public isSupported (model: string | undefined, cmd: string): boolean {
-        if (model === undefined) return true
-        return !(this.cache[model] || []).includes(cmd)
-    }
-
-    public markUnsupported (model: string | undefined, cmd: string): void {
-        if (model === undefined) return
-
-        if (this.cache[model] === undefined) {
-            this.cache[model] = [ cmd ]
-        } else {
-            (this.cache[model] || []).push(cmd)
-        }
-    }
-}
-
 interface CommandStateInterface {
     disabled: boolean
     queryValue (): Promise<any>
+    getName (): string
+    getLabel (): string
+    getValue (): any
 }
 
 class CommandState<T> implements CommandStateInterface {
     private cmd: GenericCommandInterface<T>
 
-    private connection: Client
+    private connectionFactory: () => (Client | undefined)
 
     private value: T | undefined
 
@@ -55,21 +27,33 @@ class CommandState<T> implements CommandStateInterface {
 
     private changed: ((v: T | undefined) => void) | undefined
 
-    constructor (cmd: GenericCommandInterface<T>, connection: Client, changed?: (v: T | undefined) => void) {
+    private log: (level: string, msg: string) => void = EMPTY_LAMBDA
+
+    constructor (cmd: GenericCommandInterface<T>, connectionFactory: () => (Client | undefined), changed?: (v: T | undefined) => void, log?: (level: string, msg: string) => void) {
         this.cmd = cmd
-        this.connection = connection
+        this.connectionFactory = connectionFactory
         this.changed = changed
+
+        if (log !== undefined) {
+            this.log = log
+        }
     }
 
     public queryValue (): Promise<T> {
         return new Promise((resolve, reject) => {
             const cmd = this.cmd.getQueryCommand()
             if (cmd === undefined) {
-                reject()
+                reject(new Error('query command not implemented'))
                 return
             }
 
-            this.connection.sendCommand(cmd, this.cmd.type)
+            const connection = this.connectionFactory()
+            if (connection === undefined) {
+                reject(new Error('no connection available'))
+                return
+            }
+
+            connection.sendCommand(cmd, this.cmd.type)
                 .then(response => {
                     const value = this.cmd.parseResponse(response || '')
                     if (this.value !== value) {
@@ -84,6 +68,7 @@ class CommandState<T> implements CommandStateInterface {
                     if (err === ResponseCode.ER401 || err.message === ResponseCode.ER401) {
                         this.disabled = true
                         this.value = undefined
+                        this.log('warn', 'Disabeling unsupported command: ' + this.cmd.label)
                     }
                     reject(err)
                 })
@@ -93,6 +78,14 @@ class CommandState<T> implements CommandStateInterface {
     public getValue (): T | undefined {
         return this.value
     }
+
+    public getName (): string {
+        return this.cmd.name
+    }
+
+    public getLabel (): string {
+        return this.cmd.label
+    }
 }
 
 export class Projector extends EventEmitter {
@@ -101,9 +94,7 @@ export class Projector extends EventEmitter {
 
     public name: string | undefined
 
-    private connection: Client
-
-    private state: ProjectorState
+    private connection: Client | undefined
 
     private queryList: CommandStateInterface[] = []
 
@@ -111,97 +102,161 @@ export class Projector extends EventEmitter {
 
     private queryStateInterval: any
 
-    private static unsupportedCommands = new CommandSupportCache()
+    private log: (level: string, msg: string) => void = () => { /* nop */ }
 
-    constructor (connection: Client) {
+    public static Events = {
+        STATE_CHANGE: 'state_change'
+    }
+
+    constructor (connection: Client, log?: (level: string, msg: string) => void) {
         super()
 
-        this.connection = connection
-
-        this.state = {
-            power: new CommandState(Commands.PowerCommand, connection, v => this.emit('state_change', 'POWER', v)),
-            freeze: new CommandState(Commands.FreezeCommand, connection, v => this.emit('state_change', 'SHUTTER', v)),
-            shutter: new CommandState(Commands.ShutterCommand, connection, v => this.emit('state_change', 'FREEZE', v)),
-            lamps: new CommandState(Commands.LampStatusCommand, connection, v => this.emit('state_change', 'LAMP', v)),
-            input: new CommandState(Commands.InputSelectCommand, connection, v => this.emit('state_change', 'INPUT', v))
+        if (log !== undefined) {
+            this.log = log
         }
 
-        this.queryList.push(this.state.power)
-        this.queryList.push(this.state.freeze)
-        this.queryList.push(this.state.shutter)
-        this.queryList.push(this.state.lamps)
-        this.queryList.push(this.state.input)
+        this.updateConnection(connection)
 
+        this.addMonitoring(Commands.PowerCommand)
+        this.addMonitoring(Commands.FreezeCommand)
+        this.addMonitoring(Commands.ShutterCommand)
+        // this.addMonitoring(Commands.LampStatusCommand)
+        this.addMonitoring(Commands.InputSelectCommand)
+        this.addMonitoring(Commands.LampControlStatusCommand)
+    }
+
+    public updateConnection (connection: Client): void {
         if (connection.connected === true) {
-            this.init()
+            this.init(connection)
         } else {
-            connection.on('connect', () => {
-                this.init()
+            connection.on(Client.Events.CONNECT, () => {
+                this.init(connection)
             })
         }
     }
 
     public sendQuery (command: CommandInterface): Promise<string | undefined> {
+        if (this.connection === undefined) {
+            return Promise.reject(new Error('no connection available'))
+        }
+
         const formatted = command.getQueryCommand()
-        if (formatted !== undefined && Projector.unsupportedCommands.isSupported(this.model, formatted)) {
+        if (formatted !== undefined) {
             const promise = this.connection.sendCommand(formatted, command.type)
-            promise.catch(err => this.onError(err, formatted))
             return promise
         }
-        return Promise.reject()
+
+        return Promise.reject(new Error('query command not implemented'))
     }
 
     public sendValue<T> (command: GenericCommandInterface<T>, value?: T | undefined): Promise<string | undefined> {
+        if (this.connection === undefined) {
+            return Promise.reject(new Error('no connection available'))
+        }
+
         const formatted = command.getSetCommand(value)
-        if (formatted !== undefined && Projector.unsupportedCommands.isSupported(this.model, formatted)) {
+        if (formatted !== undefined) {
             const promise = this.connection.sendCommand(formatted, command.type)
-            promise.catch(err => this.onError(err, formatted))
             return promise
         }
-        return Promise.reject()
+
+        return Promise.reject(new Error('invalid value or command not implemented'))
+    }
+
+    public getValue<T> (cmd: GenericCommandInterface<T>): Promise<T | undefined> {
+        for (const item of this.queryList) {
+            if (item.getName() === cmd.name) {
+                return Promise.resolve(item.getValue() as T | undefined)
+            }
+        }
+
+        return new Promise<T | undefined>((resolve, reject) => {
+            this.sendQuery(cmd).then(response => {
+                resolve(cmd.parseResponse(response || ''))
+            }, reject)
+        })
+    }
+
+    /**
+     * Adds command to a list of cyclic queried commands.
+     * If the result of a command changes, a 'state_change' is triggered
+     * with the following signate: (command_label, new_value)
+     * @param command The command to be monitored (cyclic querying of the projector)
+     */
+    public addMonitoring<T> (command: GenericCommandInterface<T>): void {
+        const state = new CommandState(command, () => this.connection, v => this.emit(Projector.Events.STATE_CHANGE, command.label, v), this.log)
+        this.queryList.push(state)
+    }
+
+    public removeMonitoring<T> (command: GenericCommandInterface<T>): boolean {
+        for (const state of this.queryList) {
+            if (state.getName() === command.name) {
+                // Get index in list
+                const index = this.queryList.indexOf(state)
+                if (index >= 0) {
+                    // remove command from list
+                    this.queryList.splice(index, 1)
+                    return true
+                }
+            }
+        }
+
+        return false
+    }
+
+    private sendToggleCommand (cmd: GenericCommandInterface<boolean>, value?: boolean): void {
+        if (value === undefined) {
+            value = !this.getValue(cmd)
+        }
+        this.sendValue(cmd, value).then(EMPTY_LAMBDA, this.onError.bind(this))
     }
 
     public setPower (power?: boolean | undefined) {
-        if (power === undefined) {
-            power = !this.state.power
-        }
-        this.sendValue(Commands.PowerCommand, power).then(EMPTY_LAMBDA, this.onError)
+        this.sendToggleCommand(Commands.PowerCommand, power)
     }
 
     public setFreeze (freeze?: boolean | undefined) {
-        if (freeze === undefined) {
-            freeze = !this.state.freeze
-        }
-        this.sendValue(Commands.FreezeCommand, freeze).then(EMPTY_LAMBDA, this.onError)
+        this.sendToggleCommand(Commands.FreezeCommand, freeze)
     }
 
     public setShutter (shutter?: boolean | undefined) {
-        if (shutter === undefined) {
-            shutter = !this.state.shutter
-        }
-        this.sendValue(Commands.ShutterCommand, shutter).then(EMPTY_LAMBDA, this.onError)
+        this.sendToggleCommand(Commands.ShutterCommand, shutter)
     }
 
     public setInput (input: ProjectorInput) {
-        this.sendValue(Commands.InputSelectCommand, input).then(EMPTY_LAMBDA, this.onError)
+        this.sendValue(Commands.InputSelectCommand, input).then(EMPTY_LAMBDA, this.onError.bind(this))
     }
 
-    private init () {
+    private init (connection: Client) {
+
+        if (this.connection !== undefined) {
+            // TODO: remove listener?
+        }
+
+        this.connection = connection
+
         this.sendQuery(Commands.ModelNameCommand).then(response => {
             if (response !== undefined) {
                 this.model = response
+                this.emit(Projector.Events.STATE_CHANGE, 'model', this.model)
             }
-        }, this.onError)
+        }, this.onError.bind(this))
 
         this.sendQuery(Commands.ProjectorNameCommand).then(response => {
             if (response !== undefined) {
                 this.name = response
+                this.emit(Projector.Events.STATE_CHANGE, 'name', this.name)
             }
-        }, this.onError)
+        }, this.onError.bind(this))
 
         if (this.queryStateInterval !== undefined) {
             clearInterval(this.queryStateInterval)
             delete this.queryStateInterval
+        }
+
+        // reset command states
+        for (const state of this.queryList) {
+            state.disabled = false
         }
 
         this.queryStateInterval = setInterval(() => this.queryState(), 200)
@@ -232,10 +287,10 @@ export class Projector extends EventEmitter {
     }
 
     private onError (err: Error, cmd?: string) {
-        console.log(err)
-
-        if (err.message === ResponseCode.ER401 && cmd !== undefined && this.model !== undefined) {
-            Projector.unsupportedCommands.markUnsupported(this.model, cmd)
+        if (cmd !== undefined) {
+            this.log('error', 'Command "' + cmd + '" resulted in error: ' + err)
+        } else {
+            this.log('error', 'Error: ' + err)
         }
     }
 }

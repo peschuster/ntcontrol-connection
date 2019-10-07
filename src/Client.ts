@@ -44,13 +44,19 @@ export class Client extends EventEmitter {
 
     private log: (level: string, msg: string) => void = () => { /* nop */ }
 
-    constructor (host: string, port: number | undefined, user: string | undefined, password: string | undefined, log?: (level: string, msg: string) => void | undefined) {
+    public static Events = {
+        CONNECT: 'connect',
+        DISCONNECT: 'disconnect',
+        DATA: 'data',
+        END: 'end',
+        DEBUG: 'debug'
+    }
+
+    constructor (host: string, port: number | undefined, log?: (level: string, msg: string) => void) {
         super()
 
         this.host = host
         this.port = port || DEFAULT_PORT
-        this.user = user
-        this.password = password
         this.cmdStack = []
 
         if (log !== undefined) {
@@ -69,17 +75,17 @@ export class Client extends EventEmitter {
                 this.connect()
             })
 
-            this.socket.on('timout', () => {
+            this.socket.on('timeout', () => {
                 // Destory and reconnect (reject all pending responses).
                 this.connect()
             })
 
             this.socket.on('connect', () => {
-                this.emit('debug', 'socket connect')
+                this.emit(Client.Events.DEBUG, 'socket connect')
             })
 
             this.socket.on('end', () => {
-                this.emit('end')
+                this.emit(Client.Events.END)
             })
 
             // separate buffered stream into lines with responses
@@ -90,10 +96,17 @@ export class Client extends EventEmitter {
         }
     }
 
+    public setAuthentication (user: string | undefined, password: string | undefined): void {
+        this.user = user
+        this.password = password
+    }
+
     private setToken (salt: string): void {
         if (salt) {
+            const user = this.user || ''
+            const password = this.password || ''
             this.token = crypto.createHash('md5')
-                .update(this.user + ':' + this.password + ':' + salt, 'ascii')
+                .update(user + ':' + password + ':' + salt, 'ascii')
                 .digest('hex')
                 .toUpperCase()
         } else {
@@ -130,18 +143,18 @@ export class Client extends EventEmitter {
             if (line[10] === '1') {
                 salt = line.substring(12)
             } else if (line[10] !== '0') {
-                this.emit('debug', 'Unkown greeting: ' + line)
+                this.emit(Client.Events.DEBUG, 'Unkown greeting: ' + line)
             }
 
             this.setToken(salt)
             this.connected = true
-            this.emit('connect')
+            this.emit(Client.Events.CONNECT)
 
         } else if (Object.values(ProtocolPrefix).includes(line.substring(0, 2) as ProtocolPrefix)) {
             // Usual response
             const response = line.substring(2)
 
-            const promise = this.cmdStack.pop()
+            const promise = this.cmdStack.shift()
 
             switch (response) {
                 case ResponseCode.ERR1:
@@ -157,14 +170,14 @@ export class Client extends EventEmitter {
                     }
                     break
                 default:
-                    this.emit('data', response)
+                    this.emit(Client.Events.DATA, response)
                     if (promise !== undefined) {
                         promise.resolve(response)
                     }
                     break
             }
         } else {
-            this.emit('debug', 'Unkown data received: ' + line)
+            this.emit(Client.Events.DEBUG, 'Unkown data received: ' + line)
         }
     }
 
@@ -192,6 +205,7 @@ export class Client extends EventEmitter {
             this.socket.destroy()
             delete this.socket
             this.connected = false
+            this.emit(Client.Events.DISCONNECT)
 
             let promise = this.cmdStack.pop()
             while (promise !== undefined) {
