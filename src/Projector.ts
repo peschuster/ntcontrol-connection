@@ -236,14 +236,14 @@ export class Projector extends EventEmitter {
 
         this.sendQuery(Commands.ModelNameCommand).then(response => {
             if (response !== undefined) {
-                this.model = response
+                this.model = Commands.ModelNameCommand.parseResponse(response)
                 this.emit(Projector.Events.STATE_CHANGE, 'model', this.model)
             }
         }, this.onError.bind(this))
 
         this.sendQuery(Commands.ProjectorNameCommand).then(response => {
             if (response !== undefined) {
-                this.name = response
+                this.name = Commands.ProjectorNameCommand.parseResponse(response)
                 this.emit(Projector.Events.STATE_CHANGE, 'name', this.name)
             }
         }, this.onError.bind(this))
