@@ -47,7 +47,8 @@ export class Client extends EventEmitter {
         DISCONNECT: 'disconnect',
         DATA: 'data',
         END: 'end',
-        DEBUG: 'debug'
+        DEBUG: 'debug',
+        AUTHENTICATION_ERROR: 'auth_error'
     }
 
     constructor (host: string, port: number | undefined) {
@@ -156,8 +157,13 @@ export class Client extends EventEmitter {
                 case ResponseCode.ERR3:
                 case ResponseCode.ERR4:
                 case ResponseCode.ERR5:
-                case ResponseCode.ERRA:
                 case ResponseCode.ER401:
+                    if (promise !== undefined) {
+                        promise.reject(new Error(response))
+                    }
+                    break
+                case ResponseCode.ERRA:
+                    this.emit(Client.Events.AUTHENTICATION_ERROR)
                     if (promise !== undefined) {
                         promise.reject(new Error(response))
                     }

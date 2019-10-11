@@ -4,7 +4,7 @@ import { Client } from './Client'
 import { ProjectorInput, CommandInterface, GenericCommandInterface } from './Types'
 
 import * as Commands from './Commands'
-import { ResponseCode } from './Responses'
+import { ResponseCode, getResponseDescription } from './Responses'
 
 const EMPTY_LAMBDA = () => { /* nop */ }
 
@@ -101,6 +101,8 @@ export class Projector extends EventEmitter {
     private queryIndex: number = 0
 
     private queryStateInterval: any
+
+    private authLogPending: NodeJS.Timeout | undefined
 
     private log: (level: string, msg: string) => void = () => { /* nop */ }
 
@@ -239,13 +241,15 @@ export class Projector extends EventEmitter {
                 this.model = Commands.ModelNameCommand.parseResponse(response)
                 this.emit(Projector.Events.STATE_CHANGE, 'model', this.model)
             }
-        }, this.onError.bind(this))
 
-        this.sendQuery(Commands.ProjectorNameCommand).then(response => {
-            if (response !== undefined) {
-                this.name = Commands.ProjectorNameCommand.parseResponse(response)
-                this.emit(Projector.Events.STATE_CHANGE, 'name', this.name)
-            }
+            // Query name
+            this.sendQuery(Commands.ProjectorNameCommand).then(response => {
+                if (response !== undefined) {
+                    this.name = Commands.ProjectorNameCommand.parseResponse(response)
+                    this.emit(Projector.Events.STATE_CHANGE, 'name', this.name)
+                }
+            }, this.onError.bind(this))
+
         }, this.onError.bind(this))
 
         if (this.queryStateInterval !== undefined) {
@@ -289,7 +293,26 @@ export class Projector extends EventEmitter {
         if (cmd !== undefined) {
             this.log('error', 'Command "' + cmd + '" resulted in error: ' + (err.message || err))
         } else {
-            this.log('error', 'Error: ' + (err.message || err))
+            const msg = err.message || err
+            const description = getResponseDescription(msg as ResponseCode)
+            if (msg === ResponseCode.ERRA) {
+                // Invalid authentication
+                if (this.queryStateInterval !== undefined) {
+                    clearInterval(this.queryStateInterval)
+                    delete this.queryStateInterval
+                }
+
+                // Throttle logging
+                // tslint:disable-next-line:tsr-detect-possible-timing-attacks
+                if (this.authLogPending === undefined) {
+                    this.authLogPending = setTimeout(() => {
+                        this.log('error', 'Authentication failed. Invalid credentials.')
+                        delete this.authLogPending
+                    }, 250)
+                }
+            } else {
+                this.log('error', 'Received error: ' + msg + (description === undefined ? '' : ' (' + description + ')'))
+            }
         }
     }
 }

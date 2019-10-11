@@ -108,7 +108,7 @@ const server = net.createServer(socket => {
             }
             
         } else {
-            this.emit('debug', 'Unkown data received: ' + line)
+            send(socket, '20ERRA')
         }
     })
   
