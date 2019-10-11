@@ -2,7 +2,7 @@ import * as crypto from 'crypto'
 import { EventEmitter } from 'events'
 
 import { TcpClient } from './TcpClient'
-import { ResponseCode, getResponseDescription } from './Responses'
+import { ResponseCode } from './Responses'
 import { CommandType } from './Types'
 
 const DEFAULT_PORT: number = 1024
@@ -42,8 +42,6 @@ export class Client extends EventEmitter {
 
     public connected: boolean = false
 
-    private log: (level: string, msg: string) => void = () => { /* nop */ }
-
     public static Events = {
         CONNECT: 'connect',
         DISCONNECT: 'disconnect',
@@ -52,16 +50,12 @@ export class Client extends EventEmitter {
         DEBUG: 'debug'
     }
 
-    constructor (host: string, port: number | undefined, log?: (level: string, msg: string) => void) {
+    constructor (host: string, port: number | undefined) {
         super()
 
         this.host = host
         this.port = port || DEFAULT_PORT
         this.cmdStack = []
-
-        if (log !== undefined) {
-            this.log = log
-        }
     }
 
     public connect () {
@@ -164,7 +158,6 @@ export class Client extends EventEmitter {
                 case ResponseCode.ERR5:
                 case ResponseCode.ERRA:
                 case ResponseCode.ER401:
-                    this.log('error', 'Received error: ' + response + ' (' + getResponseDescription(response) + ')')
                     if (promise !== undefined) {
                         promise.reject(new Error(response))
                     }
