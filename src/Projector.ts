@@ -207,9 +207,12 @@ export class Projector extends EventEmitter {
 
     private sendToggleCommand (cmd: GenericCommandInterface<boolean>, value?: boolean): void {
         if (value === undefined) {
-            value = !this.getValue(cmd)
+            this.getValue(cmd).then(v => {
+                this.sendValue(cmd, !v).then(EMPTY_LAMBDA, this.onError.bind(this))
+            }, this.onError.bind(this))
+        } else {
+            this.sendValue(cmd, value).then(EMPTY_LAMBDA, this.onError.bind(this))
         }
-        this.sendValue(cmd, value).then(EMPTY_LAMBDA, this.onError.bind(this))
     }
 
     public setPower (power?: boolean | undefined) {
