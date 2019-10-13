@@ -34,6 +34,8 @@ function send(socket, data) {
     }
 }
 
+const cmdValues = {}
+
 const server = net.createServer(socket => {
 
     // Identify this client
@@ -87,9 +89,30 @@ const server = net.createServer(socket => {
             }
 
             let response = undefined
-            if (cmd.substring(0, 1) == 'O' || cmd.substring(0, 1) == 'V') {
+            if (cmd.substring(0, 1) == 'O' || cmd.substring(0, 1) == 'V' || cmd == 'PON' || cmd == 'POF') {
                 // Just echo back set commands
                 response = cmd
+                // Save value
+                let baseCmd = cmd.substring(1)
+                let key, value
+                if (baseCmd.indexOf('=') > 0) {
+                    [ key, value ] = baseCmd.split('=', 2)
+                } else if (baseCmd.indexOf(':') > 0) {
+                    [ key, value ] = baseCmd.split(':', 2)
+                } else if (baseCmd == 'ON') {
+                    key = 'PW'
+                    value = '001'
+                } else if (baseCmd == 'OF') {
+                    key = 'PW'
+                    value = '000'
+                }
+
+                if (key !== undefined && value !== undefined) {
+                    cmdValues[key] = value
+                    console.log('--> Setting "' + key + '" to "' + value + '"')
+                }
+            } else if (cmd.substring(0, 1) == 'Q' && cmdValues[cmd.substring(1)] !== undefined) {
+                response = cmdValues[cmd.substring(1)]
             } else if (commands[cmd] !== undefined) {
                 let responseList = commands[cmd]
                 if (responseList.length > 1) {
