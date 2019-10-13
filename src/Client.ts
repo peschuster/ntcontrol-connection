@@ -188,7 +188,14 @@ export class Client extends EventEmitter {
 
                 if (this.socket !== undefined) {
                     const prefix = (type === CommandType.Binary) ? ProtocolPrefix.PERSISTENT_BIN : ProtocolPrefix.PERSISTENT_ASCII
-                    this.socket.send(this.token + prefix + 'ADZZ;' + cmd + PROTOCOL_LINE_BREAK)
+                    try {
+                        this.socket.send(this.token + prefix + 'ADZZ;' + cmd + PROTOCOL_LINE_BREAK)
+                    } catch (e) {
+                        this.emit(Client.Events.DEBUG, 'Error sending data: ' + e)
+
+                        // restart connection
+                        this.connect()
+                    }
                 }
 
                 // Automatically resolve promise, if no response is received (not all cmds generate a response, but all might end with an error)
