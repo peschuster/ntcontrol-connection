@@ -89,7 +89,7 @@ const server = net.createServer(socket => {
             }
 
             let response = undefined
-            if (cmd.substring(0, 1) == 'O' || cmd.substring(0, 1) == 'V' || cmd == 'PON' || cmd == 'POF') {
+            if (cmd.substring(0, 1) == 'O' || cmd.substring(0, 1) == 'V' || cmd == 'PON' || cmd == 'POF' || cmd.substring(0, 3) == 'IIS') {
                 // Just echo back set commands
                 response = cmd
                 // Save value
@@ -97,14 +97,20 @@ const server = net.createServer(socket => {
                 let key, value
                 if (baseCmd.indexOf('=') > 0) {
                     [ key, value ] = baseCmd.split('=', 2)
+                } else if (baseCmd.substring(0, 2) == 'IS') {
+                    key = 'IN'
+                    value = baseCmd.split(':', 2)[1]
+                    response = value
                 } else if (baseCmd.indexOf(':') > 0) {
                     [ key, value ] = baseCmd.split(':', 2)
                 } else if (baseCmd == 'ON') {
                     key = 'PW'
                     value = '001'
+                    response = value
                 } else if (baseCmd == 'OF') {
                     key = 'PW'
                     value = '000'
+                    response = value
                 }
 
                 if (key !== undefined && value !== undefined) {
@@ -122,6 +128,7 @@ const server = net.createServer(socket => {
                 }
             } else {
                 response = 'ER401'
+                console.log('Unknown: ' + cmd)
             }
 
             if (response !== undefined) {
