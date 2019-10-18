@@ -22,6 +22,9 @@ interface InternalPromise {
     reject: (err: Error) => void
 }
 
+/**
+ * NT CONTROL connection client.
+ */
 export class Client extends EventEmitter {
 
     private host: string
@@ -40,8 +43,14 @@ export class Client extends EventEmitter {
 
     private receivebuffer: string = ''
 
+    /**
+     * Connected state (including initial handshake)
+     */
     public connected: boolean = false
 
+    /**
+     * Enumeration of events emitted by the class.
+     */
     public static Events = {
         CONNECT: 'connect',
         DISCONNECT: 'disconnect',
@@ -51,11 +60,20 @@ export class Client extends EventEmitter {
         AUTHENTICATION_ERROR: 'auth_error'
     }
 
-    constructor (host: string, port: number | undefined) {
+    /**
+     * Creates a new NT CONTROL client.
+     * @param host      NT CONTROL host/ip address
+     * @param port      Port of the NT CONTROL host (default: 1024)
+     * @param user      The user (default: 'admin1')
+     * @param password  The password (default: 'panasonic')
+     */
+    constructor (host: string, port?: number, user?: string, password?: string) {
         super()
 
         this.host = host
         this.port = port || DEFAULT_PORT
+        this.user = user
+        this.password = password
         this.cmdStack = []
     }
 
@@ -91,6 +109,11 @@ export class Client extends EventEmitter {
         }
     }
 
+    /**
+     * Set authentication information for the connection
+     * @param user      The username (default: 'admin1')
+     * @param password  The password (default: 'panasonic')
+     */
     public setAuthentication (user: string | undefined, password: string | undefined): void {
         this.user = user
         this.password = password
@@ -180,6 +203,12 @@ export class Client extends EventEmitter {
         }
     }
 
+    /**
+     * Sends a command to the NT CONTROL host.
+     * @param cmd   The command string (without CR at the end)
+     * @param type  The command type (binary vs. ascii)
+     * @returns     A promise with the response (string) from the host.
+     */
     public sendCommand (cmd: string, type: CommandType = CommandType.Binary): Promise<string | undefined> {
         if (this.socket !== undefined) {
             return new Promise((resolve, reject) => {
@@ -206,17 +235,23 @@ export class Client extends EventEmitter {
         }
     }
 
+    /**
+     * Closes the underlying TCP connection.
+     */
     public destroy () {
         if (this.socket !== undefined) {
+            this.socket.removeAllListeners()
             this.socket.destroy()
             delete this.socket
+
             this.connected = false
             this.emit(Client.Events.DISCONNECT)
 
-            let promise = this.cmdStack.pop()
+            // Resolve all pending requests.
+            let promise = this.cmdStack.shift()
             while (promise !== undefined) {
                 promise.reject(new Error('Socket closed.'))
-                promise = this.cmdStack.pop()
+                promise = this.cmdStack.shift()
             }
         }
     }
@@ -228,5 +263,4 @@ export class Client extends EventEmitter {
             promise.resolve()
         }
     }
-
 }
