@@ -8,7 +8,7 @@ import { CommandType } from './Types'
 const DEFAULT_PORT: number = 1024
 const PROTOCOL_LINE_BREAK: string = '\r'
 
-const AUTO_RESOLVE_TIME: number = 200
+const AUTO_RESOLVE_TIME: number = 500
 
 enum ProtocolPrefix {
     SINGLE_COMMAND_ASCII = '00',
@@ -212,23 +212,27 @@ export class Client extends EventEmitter {
     public sendCommand (cmd: string, type: CommandType = CommandType.Binary): Promise<string | undefined> {
         if (this.socket !== undefined) {
             return new Promise((resolve, reject) => {
-                const promiseRef = { resolve, reject }
-                this.cmdStack.push(promiseRef)
 
                 if (this.socket !== undefined) {
-                    const prefix = (type === CommandType.Binary) ? ProtocolPrefix.PERSISTENT_BIN : ProtocolPrefix.PERSISTENT_ASCII
                     try {
+                        const prefix = (type === CommandType.Binary) ? ProtocolPrefix.PERSISTENT_BIN : ProtocolPrefix.PERSISTENT_ASCII
                         this.socket.send(this.token + prefix + 'ADZZ;' + cmd + PROTOCOL_LINE_BREAK)
+
+                        const promiseRef = { resolve, reject }
+                        this.cmdStack.push(promiseRef)
+
+                        // Automatically resolve promise, if no response is received (not all cmds generate a response, but all might end with an error)
+                        setTimeout(() => this.autoResolve(promiseRef), AUTO_RESOLVE_TIME)
                     } catch (e) {
                         this.emit(Client.Events.DEBUG, 'Error sending data: ' + e)
+
+                        // retry
+                        this.once(Client.Events.CONNECT, () => this.sendCommand(cmd, type).then(resolve, reject))
 
                         // restart connection
                         this.connect()
                     }
                 }
-
-                // Automatically resolve promise, if no response is received (not all cmds generate a response, but all might end with an error)
-                setTimeout(() => this.autoResolve(promiseRef), AUTO_RESOLVE_TIME)
             })
         } else {
             return Promise.reject(new Error('No socket.'))
