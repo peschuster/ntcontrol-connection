@@ -1,3 +1,9 @@
 language: node_js
 node_js:
  - "node"
+- stage: build
+  script: yarn build
+- # stage name not required
+  script: yarn lint
+- stage: test
+  script: yarn test
