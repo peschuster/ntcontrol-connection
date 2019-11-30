@@ -86,6 +86,12 @@ export class GenericCommand<T> implements GenericCommandInterface<T> {
             }
         }
 
+        // Projector echoes back complete command on successful "set commands"
+        if (value.startsWith(this.setCommand)) {
+            // +1 -> also remove the ':' or '=' character
+            value = value.substring(this.setCommand.length + 1)
+        }
+
         return this.converter.parse(value)
     }
 

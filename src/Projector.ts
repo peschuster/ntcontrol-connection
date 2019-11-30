@@ -9,9 +9,12 @@ import { ResponseCode, getResponseDescription } from './Responses'
 
 const EMPTY_LAMBDA = () => { /* nop */ }
 
+const QUERY_INTERVAL_MS = 500
+
 interface CommandStateInterface {
     disabled: boolean
     queryValue (): Promise<any>
+    updateValue (response: string | undefined): any | undefined
     getName (): string
     getLabel (): string
     getValue (): any
@@ -56,13 +59,7 @@ class CommandState<T> implements CommandStateInterface {
 
             connection.sendCommand(cmd, this.cmd.type)
                 .then(response => {
-                    const value = this.cmd.parseResponse(response || '')
-                    if (this.value !== value) {
-                        this.value = value
-                        if (this.changed !== undefined) {
-                            this.changed(value)
-                        }
-                    }
+                    const value = this.updateValue(response)
                     resolve(value)
                 },
                 err => {
@@ -74,6 +71,17 @@ class CommandState<T> implements CommandStateInterface {
                     reject(err)
                 })
         })
+    }
+
+    public updateValue (response: string | undefined): T | undefined {
+        const value = this.cmd.parseResponse(response || '')
+        if (this.value !== value) {
+            this.value = value
+            if (this.changed !== undefined) {
+                this.changed(value)
+            }
+        }
+        return value
     }
 
     public getValue (): T | undefined {
@@ -158,8 +166,21 @@ export class Projector extends EventEmitter {
 
         const formatted = command.getSetCommand(value)
         if (formatted !== undefined) {
-            const promise = this.connection.sendCommand(formatted, command.type)
-            return promise
+            const conn = this.connection
+            return new Promise((resolve, reject) => {
+                conn.sendCommand(formatted, command.type).then(response => {
+
+                    // Update internal state
+                    for (const state of this.queryList) {
+                        if (state.getName() === command.getName()) {
+                            state.updateValue(response)
+                            break
+                        }
+                    }
+
+                    resolve(response)
+                }, reject)
+            })
         }
 
         return Promise.reject(new Error('invalid value or command not implemented'))
@@ -266,7 +287,7 @@ export class Projector extends EventEmitter {
             state.disabled = false
         }
 
-        this.queryStateInterval = setInterval(() => this.queryState(), 200)
+        this.queryStateInterval = setInterval(() => this.queryState(), QUERY_INTERVAL_MS)
     }
 
     private queryState () {

@@ -113,6 +113,10 @@ test('SHUTTER specification', () => {
     // Parse
     expect(cmd.parseResponse('0')).toBe(false)
     expect(cmd.parseResponse('1')).toBe(true)
+
+    // Parse echoed response
+    expect(cmd.parseResponse('OSH:0')).toBe(false)
+    expect(cmd.parseResponse('OSH:1')).toBe(true)
 })
 
 function testActionSpeeds (cmd: GenericCommandInterface<ActionSpeed>, variable: string): void {
@@ -131,6 +135,14 @@ function testActionSpeeds (cmd: GenericCommandInterface<ActionSpeed>, variable: 
     expect(cmd.parseResponse(variable + '=+00101')).toBe(ActionSpeed['NORMAL-'])
     expect(cmd.parseResponse(variable + '=+00200')).toBe(ActionSpeed['FAST+'])
     expect(cmd.parseResponse(variable + '=+00201')).toBe(ActionSpeed['FAST-'])
+
+    // Parse echoed response
+    expect(cmd.parseResponse('VXX:' + variable + '=+00000')).toBe(ActionSpeed['SLOW+'])
+    expect(cmd.parseResponse('VXX:' + variable + '=+00001')).toBe(ActionSpeed['SLOW-'])
+    expect(cmd.parseResponse('VXX:' + variable + '=+00100')).toBe(ActionSpeed['NORMAL+'])
+    expect(cmd.parseResponse('VXX:' + variable + '=+00101')).toBe(ActionSpeed['NORMAL-'])
+    expect(cmd.parseResponse('VXX:' + variable + '=+00200')).toBe(ActionSpeed['FAST+'])
+    expect(cmd.parseResponse('VXX:' + variable + '=+00201')).toBe(ActionSpeed['FAST-'])
 }
 
 test('LENS-SHIFT HORIZONTAL specification', () => {

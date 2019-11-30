@@ -1,5 +1,6 @@
 export * from './Projector'
 export * from './Client'
 export * from './Commands'
+export * from './Converters'
 export * from './Types'
 export * from './Common'
