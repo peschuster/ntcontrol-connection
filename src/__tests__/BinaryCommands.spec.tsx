@@ -26,6 +26,9 @@ test('GRID SETTINGS specification', () => {
     expect(cmd.getSetCommand(value)).toBe(undefined)
     expect(cmd.parseResponse('0200AB0701030500G0FF03')).toBe(undefined)
     expect(cmd.parseResponse('0200AB070103050000FF05')).toBe(undefined)
+
+    // Test name
+    expect(cmd.getName()).toBe('AB07')
 })
 
 test('STATUS DISPLAY specification', () => {

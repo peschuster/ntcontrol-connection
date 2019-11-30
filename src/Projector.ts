@@ -1,7 +1,8 @@
 import { EventEmitter } from 'events'
 import { Client } from './Client'
 
-import { ProjectorInput, CommandInterface, GenericCommandInterface } from './Types'
+import { ProjectorInput } from './Types'
+import { CommandInterface, GenericCommandInterface } from './GenericCommands'
 
 import * as Commands from './Commands'
 import { ResponseCode, getResponseDescription } from './Responses'

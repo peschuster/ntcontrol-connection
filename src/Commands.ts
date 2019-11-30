@@ -1,4 +1,6 @@
-import { ProjectorInput, PictureMode, Geometry, Aspect, ColorMatching, ScreenSetting, ShutterFade, NoSignalShutOff, LensMemory, LampControlStatus, LampStatus, TestPattern, ActionSpeed, ColorTemperature, EdgeBlending, CustomMasking, GenericCommand, BooleanConverter, EnumConverter, DefaultBooleanConverter, DefaultRgbConverter, NumberConverter, DefaultStringConverter, BinaryCommand, DefaultGridSettingConverter } from './Types'
+import { ProjectorInput, PictureMode, Geometry, Aspect, ColorMatching, ScreenSetting, ShutterFade, NoSignalShutOff, LensMemory, LampControlStatus, LampStatus, TestPattern, ActionSpeed, ColorTemperature, EdgeBlending, CustomMasking } from './Types'
+import { GenericCommand, BinaryCommand } from './GenericCommands'
+import { BooleanConverter, EnumConverter, DefaultBooleanConverter, DefaultRgbConverter, NumberConverter, DefaultStringConverter, DefaultGridSettingConverter } from './Converters'
 
 // GENERAL COMMANDS
 export const ModelNameCommand = new GenericCommand('ID', 'ModelName', DefaultStringConverter)

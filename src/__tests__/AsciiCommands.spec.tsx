@@ -1,5 +1,6 @@
 import * as Command from '../Commands'
-import { ProjectorInput, ActionSpeed, PictureMode, ColorTemperature, GenericCommandInterface, Geometry, Aspect, CustomMasking, EdgeBlending, ColorMatching, RgbValue, ScreenSetting, ShutterFade, NoSignalShutOff, LensMemory, LampControlStatus, LampStatus, TestPattern } from '../Types'
+import { ProjectorInput, ActionSpeed, PictureMode, ColorTemperature, Geometry, Aspect, CustomMasking, EdgeBlending, ColorMatching, RgbValue, ScreenSetting, ShutterFade, NoSignalShutOff, LensMemory, LampControlStatus, LampStatus, TestPattern } from '../Types'
+import { GenericCommandInterface } from '../GenericCommands'
 
 test('MODEL NAME specification', () => {
     const cmd = Command.ModelNameCommand
@@ -14,6 +15,9 @@ test('MODEL NAME specification', () => {
 
     // Parse
     expect(cmd.parseResponse('DW830E')).toBe('DW830E')
+
+    // Name
+    expect(cmd.getName()).toBe('ID')
 })
 
 test('PROJCETOR NAME SETTING specification', () => {
@@ -30,6 +34,9 @@ test('PROJCETOR NAME SETTING specification', () => {
     expect(cmd.parseResponse('PROJECTOR1')).toBe('PROJECTOR1')
     expect(cmd.parseResponse('NAME0857')).toBe('NAME0857')
     expect(cmd.parseResponse('')).toBe('')
+
+    // Name
+    expect(cmd.getName()).toBe('XX:NCGS8')
 })
 
 test('POWER specification', () => {
