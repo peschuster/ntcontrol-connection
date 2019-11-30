@@ -153,7 +153,7 @@ export enum TestPattern {
     'Flag (Inversion)' = '04',
     Lamp = '09',
     Convergence = '11',
-    '10%-Liminance' = '25',
+    '10%-Luminance' = '25',
     '5%-Luminance' = '26',
     '3D-1' = '80',
     '3D-2' = '81',
@@ -196,6 +196,7 @@ export interface RgbValue {
 
 export interface CommandInterface {
     name: string
+    subname?: string
     label: string
     type: CommandType
     getQueryCommand (): string | undefined

@@ -117,8 +117,8 @@ const server = net.createServer(socket => {
                     cmdValues[key] = value
                     console.log('--> Setting "' + key + '" to "' + value + '"')
                 }
-            } else if (cmd.substring(0, 1) == 'Q' && cmdValues[cmd.substring(1)] !== undefined) {
-                response = cmdValues[cmd.substring(1)]
+            } else if (cmd.substring(0, 1) == 'Q' && cmdValues[cmd.substring(1).replace('VX', 'XX')] !== undefined) {
+                response = cmdValues[cmd.substring(1).replace('VX', 'XX')]
             } else if (commands[cmd] !== undefined) {
                 let responseList = commands[cmd]
                 if (responseList.length > 1) {

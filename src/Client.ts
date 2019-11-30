@@ -83,7 +83,8 @@ export class Client extends EventEmitter {
         this.socket = new TcpClient(this.host, this.port)
 
         if (this.host) {
-            this.socket.on('error', () => {
+            this.socket.on('error', (err) => {
+                this.emit(Client.Events.DEBUG, 'Network error: ' + err)
                 // Destory and reconnect (reject all pending responses).
                 this.connect()
             })
