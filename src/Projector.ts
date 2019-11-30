@@ -81,7 +81,7 @@ class CommandState<T> implements CommandStateInterface {
     }
 
     public getName (): string {
-        return this.cmd.name + (this.cmd.subname !== undefined ? (':' + this.cmd.subname) : '')
+        return this.cmd.getName()
     }
 
     public getLabel (): string {
@@ -167,7 +167,7 @@ export class Projector extends EventEmitter {
 
     public getValue<T> (cmd: GenericCommandInterface<T>): Promise<T | undefined> {
         for (const item of this.queryList) {
-            if (item.getName() === cmd.name) {
+            if (item.getName() === cmd.getName()) {
                 return Promise.resolve(item.getValue() as T | undefined)
             }
         }
@@ -192,7 +192,7 @@ export class Projector extends EventEmitter {
 
     public removeMonitoring<T> (command: GenericCommandInterface<T>): boolean {
         for (const state of this.queryList) {
-            if (state.getName() === (command.name + (command.subname !== undefined ? (':' + command.subname) : ''))) {
+            if (state.getName() === command.getName()) {
                 // Get index in list
                 const index = this.queryList.indexOf(state)
                 if (index >= 0) {
