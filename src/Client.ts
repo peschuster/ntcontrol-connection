@@ -43,6 +43,8 @@ export class Client extends EventEmitter {
 
     private receivebuffer: string = ''
 
+    private reportConnectionError: boolean = true
+
     /**
      * Connected state (including initial handshake)
      */
@@ -84,7 +86,11 @@ export class Client extends EventEmitter {
 
         if (this.host) {
             this.socket.on('error', (err) => {
-                this.emit(Client.Events.DEBUG, 'Network error: ' + err)
+                if (err && this.reportConnectionError) {
+                    this.emit(Client.Events.DEBUG, 'Network error: ' + err)
+                    this.reportConnectionError = false
+                }
+
                 // Destory and reconnect (reject all pending responses).
                 this.connect()
             })
@@ -96,6 +102,7 @@ export class Client extends EventEmitter {
 
             this.socket.on('connect', () => {
                 this.emit(Client.Events.DEBUG, 'socket connect')
+                this.reportConnectionError = true
             })
 
             this.socket.on('end', () => {

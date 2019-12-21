@@ -88,8 +88,10 @@ export class TcpClient extends EventEmitter {
 
             // status levels: null = unknown, 0 = ok, 1 = warning, 2 = error
             debug('error: ' + err.message)
-            this.new_status(ClientStatus.Error, err.message)
-            this.emit('error', err)
+            if (this.status !== ClientStatus.Error) {
+                this.new_status(ClientStatus.Error, err.message)
+                this.emit('error', err)
+            }
         })
 
         this.socket.on('connect', () => {
