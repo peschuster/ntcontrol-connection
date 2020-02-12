@@ -122,9 +122,6 @@ export class TcpClient extends EventEmitter {
         tcpSockets.push(this.socket)
         debug(tcpSockets.length + ' TCP sockets in use (+1)')
 
-        // Let caller install event handlers first
-        setImmediate(this.connect.bind(this))
-
         return this
     }
 
