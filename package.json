@@ -33,6 +33,9 @@
     "ntcontrol",
     "panasonic"
   ],
+  "dependencies": {
+    "tslib": "^1.11.0"
+  },
   "devDependencies": {
     "@types/jest": "^24.0.18",
     "@types/node": "^12.7.8",
