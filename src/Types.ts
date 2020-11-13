@@ -6,6 +6,7 @@ export enum ProjectorInput {
     'Y/C' = 'SVD',
     DVI = 'DVI',
     HDMI1 = 'HD1',
+    HDMI2 = 'HD2',
     SDI1 = 'SD1',
     SDI2 = 'SD2',
     'DIGITAL LINK' = 'DL1'
