@@ -7,6 +7,10 @@ export enum ProjectorInput {
     DVI = 'DVI',
     HDMI1 = 'HD1',
     HDMI2 = 'HD2',
+    'NETWORK/USB' = 'NWP',
+    'Panasonic Application' = 'PA1',
+    'Miracast/Mirroring' = 'MC1',
+    'MEMORY VIEWER' = 'MV1',
     SDI1 = 'SD1',
     SDI2 = 'SD2',
     'DIGITAL LINK' = 'DL1'
@@ -16,6 +20,8 @@ export enum PictureMode {
     DYNAMIC = 'DYN',
     NATURAL = 'NAT',
     STANDARD = 'STD',
+    'BLACK BOARD' = 'BBD',
+    'WHITE BOARD' = 'WBD',
     CINEMA = 'CIN',
     GRAPHIC = 'GRA',
     'DICOM SIM' = 'DIC',
@@ -23,7 +29,9 @@ export enum PictureMode {
 }
 
 export enum ColorTemperature {
+    LOW = '0',
     DEFAULT = '1',
+    HIGH = '2',
     USER1 = '04',
     USER2 = '09',
     '3200K' = '3200',
