@@ -34,18 +34,18 @@
     "panasonic"
   ],
   "dependencies": {
-    "tslib": "^1.11.0"
+    "tslib": "^1.14.1"
   },
   "devDependencies": {
     "@types/jest": "^24.9.1",
-    "@types/node": "^12.12.37",
+    "@types/node": "^12.19.4",
     "jest": "^24.9.0",
     "prettier": "^1.19.1",
-    "ts-jest": "^24.3.0",
+    "ts-jest": "^26.4.4",
     "tslint": "^5.20.1",
     "tslint-config-prettier": "^1.18.0",
     "tslint-config-security": "^1.16.0",
     "tslint-config-standard": "^8.0.1",
-    "typescript": "^3.8.3"
+    "typescript": "^3.9.7"
   }
 }
