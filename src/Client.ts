@@ -2,7 +2,7 @@ import * as crypto from 'crypto'
 import { EventEmitter } from 'events'
 
 import { TcpClient } from './TcpClient'
-import { ResponseCode } from './Responses'
+import { ResponseCode, getResponseDescription } from './Responses'
 import { CommandType } from './Types'
 
 const DEFAULT_PORT: number = 1024
@@ -203,6 +203,24 @@ export class Client extends EventEmitter {
                     this.emit(Client.Events.DATA, response)
                     if (promise !== undefined) {
                         promise.resolve(response)
+                    }
+                    break
+            }
+        } else if (Object.values(ResponseCode).includes(line as ResponseCode)) {
+
+            const promise = this.cmdStack.shift()
+
+            switch (line) {
+                case ResponseCode.ERRA:
+                    this.emit(Client.Events.AUTHENTICATION_ERROR)
+                    if (promise !== undefined) {
+                        promise.reject(new Error(line))
+                    }
+                    break
+                default:
+                    if (promise !== undefined) {
+                        const description = getResponseDescription(line as ResponseCode)
+                        promise.reject(new Error(description))
                     }
                     break
             }
