@@ -744,6 +744,21 @@ test('EDGE BLENDING-MARKER-ON/OFF specification', () => {
     expect(cmd.parseResponse('1')).toBe(true)
 })
 
+test('QUAD PIXEL DRIVE specification', () => {
+    const cmd = Command.QuadPixelDriveCommand
+
+    // Query
+    expect(cmd.getQueryCommand()).toBe('QVX:QPDI1')
+
+    // Set
+    expect(cmd.getSetCommand(false)).toBe('VXX:QPDI1=+00000')
+    expect(cmd.getSetCommand(true)).toBe('VXX:QPDI1=+00001')
+
+    // Parse
+    expect(cmd.parseResponse('QPDI1=+00000')).toBe(false)
+    expect(cmd.parseResponse('QPDI1=+00001')).toBe(true)
+})
+
 test('INPUT GUIDE specification', () => {
     const cmd = Command.InputGuideCommand
 

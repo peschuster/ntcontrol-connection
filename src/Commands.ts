@@ -55,6 +55,7 @@ export const BlankingLeftCommand = new GenericCommand('BL', 'BlankingLeft', new 
 export const CustomMaskingCommand = new GenericCommand('XX', 'CustomMasking', new EnumConverter<CustomMasking>(), { subname: 'MSKI1' })
 export const EdgeBlendingCommand = new GenericCommand('XX', 'EdgeBlending', new EnumConverter<EdgeBlending>(), { subname: 'EDBI0' })
 export const EdgeBlendingMarkerCommand = new GenericCommand('GM', 'EdgeBlendingMarker', DefaultBooleanConverter, { setPrefix: 'V' })
+export const QuadPixelDriveCommand = new GenericCommand('XX', 'QuadPixelDrive', new BooleanConverter('+00001', '+00000'), { subname: 'QPDI1' })
 
 export const InputGuideCommand = new GenericCommand('ID', 'InputGuide', DefaultBooleanConverter, { queryCommand: 'QDI', setPrefix: 'O' })
 
