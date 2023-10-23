@@ -43,7 +43,7 @@ class CommandState<T> implements CommandStateInterface {
         }
     }
 
-    public queryValue (): Promise<T> {
+    public queryValue (): Promise<T | undefined> {
         return new Promise((resolve, reject) => {
             const cmd = this.cmd.getQueryCommand()
             if (cmd === undefined) {
