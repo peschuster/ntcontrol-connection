@@ -7,6 +7,7 @@ export enum ProjectorInput {
     DVI = 'DVI',
     HDMI1 = 'HD1',
     HDMI2 = 'HD2',
+    HDMI3 = 'HD3',
     'NETWORK/USB' = 'NWP',
     'Panasonic Application' = 'PA1',
     'Miracast/Mirroring' = 'MC1',
