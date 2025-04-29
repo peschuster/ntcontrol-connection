@@ -1,5 +1,5 @@
 import * as Command from '../Commands'
-import { ProjectorInput, ActionSpeed, PictureMode, ColorTemperature, Geometry, Aspect, CustomMasking, EdgeBlending, ColorMatching, RgbValue, ScreenSetting, ShutterFade, NoSignalShutOff, LensMemory, LampControlStatus, LampStatus, TestPattern } from '../Types'
+import { ProjectorInput, ActionSpeed, PictureMode, ColorTemperature, Geometry, Aspect, CustomMasking, EdgeBlending, ColorMatching, RgbValue, ScreenSetting, ShutterFade, NoSignalShutOff, LensMemory, LampControlStatus, LampStatus, TestPattern, OperatingMode } from '../Types'
 import { GenericCommandInterface } from '../GenericCommands'
 
 test('MODEL NAME specification', () => {
@@ -1100,6 +1100,35 @@ test('ID ALL specification', () => {
     // Parse
     expect(cmd.parseResponse('0')).toBe(false)
     expect(cmd.parseResponse('1')).toBe(true)
+})
+
+test('OPERATING MODE specification', () => {
+    const cmd = Command.OperatingModeCommand
+
+    // Query
+    expect(cmd.getQueryCommand()).toBe('QVX:OPEI1')
+
+    // Set
+    expect(cmd.getSetCommand(OperatingMode.NORMAL)).toBe('VXX:OPEI1=+00000')
+    expect(cmd.getSetCommand(OperatingMode.ECO)).toBe('VXX:OPEI1=+00001')
+    expect(cmd.getSetCommand(OperatingMode.SILENT)).toBe('VXX:OPEI1=+00002')
+    expect(cmd.getSetCommand(OperatingMode['LONG LIFE1'])).toBe('VXX:OPEI1=+00011')
+    expect(cmd.getSetCommand(OperatingMode['LONG LIFE2'])).toBe('VXX:OPEI1=+00012')
+    expect(cmd.getSetCommand(OperatingMode['LONG LIFE3'])).toBe('VXX:OPEI1=+00013')
+    expect(cmd.getSetCommand(OperatingMode.USER1)).toBe('VXX:OPEI1=+00101')
+    expect(cmd.getSetCommand(OperatingMode.USER2)).toBe('VXX:OPEI1=+00102')
+    expect(cmd.getSetCommand(OperatingMode.USER3)).toBe('VXX:OPEI1=+00103')
+
+    // Parse
+    expect(cmd.parseResponse('OPEI1=+00000')).toBe(OperatingMode.NORMAL)
+    expect(cmd.parseResponse('OPEI1=+00001')).toBe(OperatingMode.ECO)
+    expect(cmd.parseResponse('OPEI1=+00002')).toBe(OperatingMode.SILENT)
+    expect(cmd.parseResponse('OPEI1=+00011')).toBe(OperatingMode['LONG LIFE1'])
+    expect(cmd.parseResponse('OPEI1=+00012')).toBe(OperatingMode['LONG LIFE2'])
+    expect(cmd.parseResponse('OPEI1=+00013')).toBe(OperatingMode['LONG LIFE3'])
+    expect(cmd.parseResponse('OPEI1=+00101')).toBe(OperatingMode.USER1)
+    expect(cmd.parseResponse('OPEI1=+00102')).toBe(OperatingMode.USER2)
+    expect(cmd.parseResponse('OPEI1=+00103')).toBe(OperatingMode.USER3)
 })
 
 test('NO SIGNAL SHUT-OFF specification', () => {

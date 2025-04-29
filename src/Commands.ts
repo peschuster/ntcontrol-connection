@@ -1,4 +1,4 @@
-import { ProjectorInput, PictureMode, Geometry, Aspect, ColorMatching, ScreenSetting, ShutterFade, NoSignalShutOff, LensMemory, LampControlStatus, LampStatus, TestPattern, ActionSpeed, ColorTemperature, EdgeBlending, CustomMasking } from './Types'
+import { ProjectorInput, PictureMode, Geometry, Aspect, ColorMatching, ScreenSetting, ShutterFade, NoSignalShutOff, LensMemory, LampControlStatus, LampStatus, TestPattern, ActionSpeed, ColorTemperature, EdgeBlending, CustomMasking, OperatingMode } from './Types'
 import { GenericCommand, BinaryCommand } from './GenericCommands'
 import { BooleanConverter, EnumConverter, DefaultBooleanConverter, DefaultRgbConverter, NumberConverter, DefaultStringConverter, DefaultGridSettingConverter } from './Converters'
 
@@ -84,6 +84,8 @@ export const ShutterFadeOutCommand = new GenericCommand('XX', 'ShutterFadeOut', 
 // PROJECTOR SETUP
 export const ProjectorIdCommand = new GenericCommand('IS', 'ProjectorId', new NumberConverter(0, 2), { setPrefix: 'R' })
 export const IdAllCommand = new GenericCommand('VY', 'IdAll', DefaultBooleanConverter, { setCommand: 'RVS' })
+
+export const OperatingModeCommand = new GenericCommand('XX', 'OperatingMode', new EnumConverter<OperatingMode>(), { subname: 'OPEI1' })
 
 export const NoSignalShutOffCommand = new GenericCommand('AF', 'NoSignalShutOff', new EnumConverter<NoSignalShutOff>(), { setPrefix: 'O' })
 

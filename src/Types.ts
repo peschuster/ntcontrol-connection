@@ -221,3 +221,15 @@ export interface GridSettings {
     verticalLines: number
     horizontalLines: number
 }
+
+export enum OperatingMode {
+    NORMAL = '+00000',
+    ECO = '+00001',
+    SILENT = '+00002',
+    'LONG LIFE1' = '+00011',
+    'LONG LIFE2' = '+00012',
+    'LONG LIFE3' = '+00013',
+    USER1 = '+00101',
+    USER2 = '+00102',
+    USER3 = '+00103'
+}
