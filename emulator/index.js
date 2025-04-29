@@ -39,7 +39,7 @@ const cmdValues = {}
 const server = net.createServer(socket => {
 
     // Identify this client
-    socket.name = socket.remoteAddress + ":" + socket.remotePort 
+    socket.name = socket.remoteAddress + ":" + socket.remotePort
 
     crypto.randomBytes(4, (err, buf) => {
         if (err) throw err
@@ -50,11 +50,11 @@ const server = net.createServer(socket => {
                     .toUpperCase()
         send(socket, 'NTCONTROL 1 ' + socket.salt)
       });
-    
+
     // Put this new client in the list
     clients.push(socket);
     socket.receivebuffer = ''
-  
+
     // Handle incoming messages from clients.
     socket.on('data', function (chunk) {
         let i = 0
@@ -62,7 +62,7 @@ const server = net.createServer(socket => {
         let offset = 0
         socket.receivebuffer += chunk
 
-        while (1) {
+        while (1 === 1) {
             i = socket.receivebuffer.indexOf(PROTOCOL_LINE_BREAK, offset)
             if (i === -1) break
 
@@ -74,7 +74,7 @@ const server = net.createServer(socket => {
 
         socket.receivebuffer = this.receivebuffer.substr(offset)
     });
-    
+
     socket.on('receiveline', function (line) {
         if (line.substring(0, socket.token.length) === socket.token) {
             line = line.substring(socket.token.length)
@@ -84,12 +84,12 @@ const server = net.createServer(socket => {
         if (Object.values(ProtocolPrefix).includes(line.substring(0, 2))) {
             const prefix = line.substring(0, 2)
             let cmd = line.substring(2)
-            if (cmd.substring(0, 5) == 'ADZZ;') {
+            if (cmd.substring(0, 5) === 'ADZZ;') {
                 cmd = cmd.substring(5)
             }
 
             let response = undefined
-            if (cmd.substring(0, 1) == 'O' || cmd.substring(0, 1) == 'V' || cmd == 'PON' || cmd == 'POF' || cmd.substring(0, 3) == 'IIS') {
+            if (cmd.substring(0, 1) === 'O' || cmd.substring(0, 1) === 'V' || cmd === 'PON' || cmd === 'POF' || cmd.substring(0, 3) === 'IIS') {
                 // Just echo back set commands
                 response = cmd
                 // Save value
@@ -119,6 +119,8 @@ const server = net.createServer(socket => {
                 }
             } else if (cmd.substring(0, 1) == 'Q' && cmdValues[cmd.substring(1).replace('VX', 'XX')] !== undefined) {
                 response = cmdValues[cmd.substring(1).replace('VX', 'XX')]
+            } else if (cmd === 'Q$S') {
+                response = cmdValues['PW'] === '001' ? '2' : '0'
             } else if (commands[cmd] !== undefined) {
                 let responseList = commands[cmd]
                 if (responseList.length > 1) {
